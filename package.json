@@ -1,0 +1,30 @@
+{
+  "name": "fantasy-nba",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start",
+    "lint": "next lint"
+  },
+  "dependencies": {
+    "@radix-ui/themes": "^2.0.0",
+    "lodash": "^4.17.21",
+    "next": "14.0.1",
+    "react": "^18",
+    "react-dom": "^18",
+    "recharts": "^2.9.2",
+    "swr": "^2.2.4"
+  },
+  "devDependencies": {
+    "@trivago/prettier-plugin-sort-imports": "^4.2.1",
+    "@types/lodash": "^4.14.200",
+    "@types/node": "^20",
+    "@types/react": "^18",
+    "@types/react-dom": "^18",
+    "eslint": "^8",
+    "eslint-config-next": "14.0.1",
+    "typescript": "^5"
+  }
+}
