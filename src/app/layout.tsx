@@ -1,7 +1,8 @@
 import type { Metadata } from "next"
 import { Inter } from "next/font/google"
+import NextLink from "next/link"
 
-import { Theme } from "@radix-ui/themes"
+import { Flex, Text, Theme } from "@radix-ui/themes"
 import "@radix-ui/themes/styles.css"
 
 import "./globals.css"
@@ -22,6 +23,15 @@ export default function RootLayout({
     <html lang="en">
       <body className={inter.className}>
         <Theme accentColor="ruby" appearance="dark">
+          <Flex p="4" justify="between">
+            <Text>Fantasy NBA</Text>
+            <Flex gap="4">
+              <NextLink href="/">Home</NextLink>
+              <NextLink href="/team-id">Change Team ID</NextLink>
+              <NextLink href="/planner">Planner</NextLink>
+            </Flex>
+            <Flex></Flex>
+          </Flex>
           {children}
         </Theme>
       </body>

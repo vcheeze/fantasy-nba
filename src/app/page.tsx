@@ -2,7 +2,10 @@
 
 import { useMemo } from "react"
 
+import { redirect } from "next/navigation"
+
 import { Box, Card, Heading, Strong, Text } from "@radix-ui/themes"
+import { getCookie } from "cookies-next"
 import { minBy } from "lodash"
 import useSWR from "swr"
 
@@ -25,7 +28,10 @@ import GamedayHistory from "@/components/GamedayHistory"
 // }
 
 export default function Home() {
-  const teamId = "4878"
+  const teamId = getCookie("teamId")
+  if (!teamId) {
+    redirect("/team-id")
+  }
   const fetcher = (url) => fetch(url).then((r) => r.json())
   const { data, isLoading: isDataLoading } = useSWR("/api/data", fetcher)
   const { data: history, isLoading: isHistoryLoading } = useSWR(
