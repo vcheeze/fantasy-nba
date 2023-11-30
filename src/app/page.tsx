@@ -32,7 +32,7 @@ export default function Home() {
   if (!teamId) {
     redirect("/team-id")
   }
-  const fetcher = (url) => fetch(url).then((r) => r.json())
+  const fetcher = (url: string) => fetch(url).then((r) => r.json())
   const { data, isLoading: isDataLoading } = useSWR("/api/data", fetcher)
   const { data: history, isLoading: isHistoryLoading } = useSWR(
     `/api/history?teamId=${teamId}`,
@@ -46,12 +46,11 @@ export default function Home() {
 
   const gamedayHistory = useMemo(() => {
     if (history) {
-      console.log("history :>> ", history)
-      return history?.current.map((h) => {
+      return history?.current.map((h: any) => {
         return {
           name:
             data.events
-              .find((e) => e.id === h.event)
+              .find((e: any) => e.id === h.event)
               ?.name.replace("Gameweek ", "GW")
               .replace(" - ", ".")
               .replace("Day ", "") || "",
@@ -64,7 +63,7 @@ export default function Home() {
       })
     } else return []
   }, [data?.events, history])
-  const bestGameday = minBy(gamedayHistory, "rank")
+  const bestGameday: any = minBy(gamedayHistory, "rank")
 
   // const teamId = localStorage.getItem("teamId")
   if (isDataLoading || isHistoryLoading || isTeamDetailsLoading) {
