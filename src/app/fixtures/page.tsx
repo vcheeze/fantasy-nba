@@ -2,8 +2,6 @@
 
 import { useEffect, useState } from 'react'
 
-import { QueryClient } from '@tanstack/react-query'
-
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import {
   Select,
@@ -28,6 +26,7 @@ import {
   fetchFixtures,
   useMetadata,
 } from '@/hooks/api'
+import { getQueryClient } from '@/lib/get-query-client'
 
 interface TeamStats {
   team: string
@@ -184,7 +183,7 @@ export default function Fixtures() {
     : undefined
   const [gameweek, setGameweek] = useState(currentPhase)
   const [fixtures, setFixtures] = useState<IFixtures[]>([])
-  const queryClient = new QueryClient()
+  const queryClient = getQueryClient()
   useEffect(() => {
     async function getGameweekFixtures(gw?: string) {
       const data = await queryClient.fetchQuery({

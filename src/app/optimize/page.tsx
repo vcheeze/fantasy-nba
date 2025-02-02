@@ -2,8 +2,6 @@
 
 import { useEffect, useState } from 'react'
 
-import { QueryClient } from '@tanstack/react-query'
-
 import { DailyScorersChart } from '@/components/DailyScorersChart'
 import { PlayerTable } from '@/components/PlayerTable'
 import { StatCard } from '@/components/StatCard'
@@ -22,6 +20,7 @@ import {
   useCurrentGameweek,
   useMetadata,
 } from '@/hooks/api'
+import { getQueryClient } from '@/lib/get-query-client'
 
 export default function Optimize() {
   const [activePhase, setActivePhase] = useState<number>()
@@ -47,16 +46,16 @@ export default function Optimize() {
     }
   }, [currentGameweek, metadata?.phases])
 
+  const queryClient = getQueryClient()
   const fetchOptimizedTeam = async () => {
     if (!activePhase) return
 
-    const queryClient = new QueryClient()
     const phases = Array.from(
       { length: numberOfGameweeks },
       (_, i) => activePhase + 1 + i,
     )
     const data = await queryClient.fetchQuery({
-      queryKey: ['optimize'],
+      queryKey: ['optimize', pointsColumn],
       queryFn: () => optimizeTeam(phases, pointsColumn),
     })
     setPlayerData(data)

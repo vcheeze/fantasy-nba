@@ -34,7 +34,7 @@ export default function Nav() {
       <h1>Fantasy NBA Planner</h1>
       <div className="flex md:gap-2">
         {ROUTES.map((route) => (
-          <Button variant="link">
+          <Button key={route.name} variant="link">
             <NextLink href={route.link}>{route.name}</NextLink>
           </Button>
         ))}
