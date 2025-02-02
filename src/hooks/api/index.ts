@@ -1,0 +1,6 @@
+export * from './currentGameweek'
+export * from './fixtures'
+export * from './metadata'
+export * from './optimize'
+export * from './teamDetails'
+export * from './teamHistory'
