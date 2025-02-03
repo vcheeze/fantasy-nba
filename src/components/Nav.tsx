@@ -36,15 +36,12 @@ export default function Nav() {
 
   if (isDesktop) {
     return (
-      <div className="w-full flex p-4 justify-between items-center max-sm:fixed max-sm:bottom-0 max-sm:bg-muted max-sm:z-50">
-        <h1 className="max-sm:hidden">Fantasy NBA Planner</h1>
+      <div className="w-full flex p-4 justify-between items-center">
+        <h1>Fantasy NBA Planner</h1>
         <div className="flex md:gap-2">
           {ROUTES.map((route) => (
             <Button key={route.name} variant="link">
-              <NextLink href={route.link}>
-                <span className="md:hidden">{route.icon}</span>
-                <span className="max-sm:hidden">{route.name}</span>
-              </NextLink>
+              <NextLink href={route.link}>{route.name}</NextLink>
             </Button>
           ))}
         </div>
@@ -64,10 +61,7 @@ export default function Nav() {
     <div className="w-full flex p-4 justify-between items-center fixed bottom-0 bg-muted z-50">
       {ROUTES.map((route) => (
         <Button key={route.name} variant="link">
-          <NextLink href={route.link}>
-            <span className="md:hidden">{route.icon}</span>
-            <span className="max-sm:hidden">{route.name}</span>
-          </NextLink>
+          <NextLink href={route.link}>{route.icon}</NextLink>
         </Button>
       ))}
       <div>

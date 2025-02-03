@@ -6,10 +6,10 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table'
-import { Player } from '@/types/players'
+import { IPlayer } from '@/hooks/api'
 
 interface PlayerTableProps {
-  players: Player[]
+  players: IPlayer[]
 }
 
 export function PlayerTable({ players }: PlayerTableProps) {
