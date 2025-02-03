@@ -35,7 +35,7 @@ import { Skeleton } from '@/components/ui/skeleton'
 import { useMetadata, useTeamDetails, useTeamHistory } from '@/hooks/api'
 import { teamIdAtom } from '@/store'
 
-export const meatadat: Metadata = {
+export const metadata: Metadata = {
   verification: {
     google: 'iTDbvkxf0Uls4YGnfxEKt_Sq6Vjti6_GHCTFg0Iv3xg',
   },
