@@ -2,8 +2,6 @@
 
 import { useEffect, useMemo, useState } from 'react'
 
-import type { Metadata } from 'next'
-
 import { zodResolver } from '@hookform/resolvers/zod'
 import { useAtom } from 'jotai'
 import { minBy } from 'lodash'
@@ -34,12 +32,6 @@ import { Input } from '@/components/ui/input'
 import { Skeleton } from '@/components/ui/skeleton'
 import { useMetadata, useTeamDetails, useTeamHistory } from '@/hooks/api'
 import { teamIdAtom } from '@/store'
-
-export const metadata: Metadata = {
-  verification: {
-    google: 'iTDbvkxf0Uls4YGnfxEKt_Sq6Vjti6_GHCTFg0Iv3xg',
-  },
-}
 
 const formSchema = z.object({
   teamId: z.coerce.number().min(1),

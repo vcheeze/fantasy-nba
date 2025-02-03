@@ -16,6 +16,9 @@ export const metadata: Metadata = {
   title: 'Fantasy NBA Planner',
   description:
     'Useful tools and visualizations for your NBA Fantasy Salary Cap Edition team.',
+  verification: {
+    google: 'iTDbvkxf0Uls4YGnfxEKt_Sq6Vjti6_GHCTFg0Iv3xg',
+  },
 }
 
 export default function RootLayout({
