@@ -10,6 +10,8 @@
   },
   "dependencies": {
     "@hookform/resolvers": "^3.10.0",
+    "@inlang/paraglide-next": "0.7.9",
+    "@next/third-parties": "^15.1.6",
     "@radix-ui/react-dialog": "^1.1.5",
     "@radix-ui/react-label": "^2.1.1",
     "@radix-ui/react-popover": "^1.1.5",
@@ -38,10 +40,10 @@
     "tailwind-merge": "^2.6.0",
     "tailwindcss-animate": "^1.0.7",
     "vaul": "^1.1.2",
-    "zod": "^3.24.1",
-    "@inlang/paraglide-next": "0.7.9"
+    "zod": "^3.24.1"
   },
   "devDependencies": {
+    "@inlang/paraglide-js": "1.11.8",
     "@tanstack/eslint-plugin-query": "^5.66.0",
     "@trivago/prettier-plugin-sort-imports": "^5.2.2",
     "@types/lodash": "^4.17.15",
@@ -53,7 +55,6 @@
     "eslint-config-next": "15.0.2",
     "postcss": "^8.5.1",
     "tailwindcss": "^3.4.17",
-    "typescript": "^5.7.3",
-    "@inlang/paraglide-js": "1.11.8"
+    "typescript": "^5.7.3"
   }
 }

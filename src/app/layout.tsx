@@ -2,6 +2,7 @@ import type { Metadata } from 'next'
 import { Inter } from 'next/font/google'
 
 import { LanguageProvider } from '@inlang/paraglide-next'
+import { GoogleAnalytics } from '@next/third-parties/google'
 
 import Nav from '@/components/Nav'
 import { languageTag } from '@/paraglide/runtime.js'
@@ -36,6 +37,7 @@ export default function RootLayout({
             <div className="container mx-auto p-8 max-sm:mb-12">{children}</div>
           </Providers>
         </body>
+        <GoogleAnalytics gaId="G-0187RMBX59" />
       </html>
     </LanguageProvider>
   )
