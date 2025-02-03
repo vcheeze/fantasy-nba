@@ -13,9 +13,10 @@ export interface IEvent {
   id: number
   name: string
   is_current: boolean
+  is_next: boolean
 }
 
-interface IPhase {
+export interface IPhase {
   id: number
   name: string
   start_event: number

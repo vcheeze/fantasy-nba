@@ -1,7 +1,10 @@
 import type { Metadata } from 'next'
 import { Inter } from 'next/font/google'
 
+import { LanguageProvider } from '@inlang/paraglide-next'
+
 import Nav from '@/components/Nav'
+import { languageTag } from '@/paraglide/runtime.js'
 
 import './globals.css'
 import Providers from './providers'
@@ -20,18 +23,20 @@ export default function RootLayout({
   children: React.ReactNode
 }) {
   return (
-    <html lang="en" suppressHydrationWarning>
-      <body className={inter.className}>
-        <Providers
-          attribute="class"
-          defaultTheme="system"
-          enableSystem
-          disableTransitionOnChange
-        >
-          <Nav />
-          <div className="container mx-auto p-8">{children}</div>
-        </Providers>
-      </body>
-    </html>
+    <LanguageProvider>
+      <html lang={languageTag()} suppressHydrationWarning>
+        <body className={inter.className}>
+          <Providers
+            attribute="class"
+            defaultTheme="light"
+            enableSystem
+            disableTransitionOnChange
+          >
+            <Nav />
+            <div className="container mx-auto p-8 max-sm:mb-12">{children}</div>
+          </Providers>
+        </body>
+      </html>
+    </LanguageProvider>
   )
 }

@@ -5,6 +5,7 @@ import { useEffect, useState } from 'react'
 import { DailyScorersChart } from '@/components/DailyScorersChart'
 import { PlayerTable } from '@/components/PlayerTable'
 import { StatCard } from '@/components/StatCard'
+import { TextLoader } from '@/components/TextLoader'
 import { Button } from '@/components/ui/button'
 import { Label } from '@/components/ui/label'
 import {
@@ -26,6 +27,7 @@ export default function Optimize() {
   const [activePhase, setActivePhase] = useState<number>()
   const [numberOfGameweeks, setNumberOfGameweeks] = useState<number>(1)
   const [pointsColumn, setPointsColumn] = useState<string>('form')
+  const [isLoading, setIsLoading] = useState(false)
   const [playerData, setPlayerData] = useState<IOptimizedTeam>()
 
   const { data: metadata } = useMetadata()
@@ -50,6 +52,7 @@ export default function Optimize() {
   const fetchOptimizedTeam = async () => {
     if (!activePhase) return
 
+    setIsLoading(true)
     const phases = Array.from(
       { length: numberOfGameweeks },
       (_, i) => activePhase + 1 + i,
@@ -59,26 +62,20 @@ export default function Optimize() {
       queryFn: () => optimizeTeam(phases, pointsColumn),
     })
     setPlayerData(data)
+    setIsLoading(false)
   }
 
   return (
     <div className="space-y-6 md:space-y-8">
       <div className="space-y-2">
         <h2 className="scroll-m-20 text-3xl font-semibold tracking-tight transition-colors first:mt-0">
-          Basketball Analytics Dashboard
+          Optimal Team
         </h2>
         <p className="text-xl text-muted-foreground">
-          Track player performance and daily scoring statistics
+          See the optimal team calculated based on player form or points per
+          game, up to 3 Gameweeks into the future.
         </p>
       </div>
-      {/* <div className="flex flex-col space-y-4">
-        <h1 className="text-4xl font-bold tracking-tight">
-          Basketball Analytics Dashboard
-        </h1>
-        <p className="text-muted-foreground">
-          Track player performance and daily scoring statistics
-        </p>
-      </div> */}
 
       <div>
         <h4 className="scroll-m-20 text-xl font-semibold tracking-tight mb-2">
@@ -86,10 +83,10 @@ export default function Optimize() {
         </h4>
         <p className="text-muted-foreground text-sm mb-4">
           Choose the starting Gameweek, how many Gameweeks to calculate for, and
-          whether you want to calculate based on form (points per game from the
-          last 30 games) or based on points per games from the whole season.
+          whether you want to calculate based on points per game from the last
+          30 games (form) or from the whole season.
         </p>
-        <div className="flex gap-4 items-end flex-wrap">
+        <div className="flex max-sm:flex-col gap-4 md:items-end flex-wrap">
           <div>
             <Label>
               Next <em>n</em> Gameweeks
@@ -98,7 +95,7 @@ export default function Optimize() {
               value={numberOfGameweeks?.toString()}
               onValueChange={(value) => setNumberOfGameweeks(parseInt(value))}
             >
-              <SelectTrigger className="w-[180px]">
+              <SelectTrigger className="w-full md:w-[180px]">
                 <SelectValue placeholder="Gameweek" />
               </SelectTrigger>
               <SelectContent>
@@ -114,7 +111,7 @@ export default function Optimize() {
               value={pointsColumn}
               onValueChange={(value) => setPointsColumn(value)}
             >
-              <SelectTrigger className="w-[180px]">
+              <SelectTrigger className="w-full md:w-[180px]">
                 <SelectValue placeholder="form" />
               </SelectTrigger>
               <SelectContent>
@@ -126,7 +123,17 @@ export default function Optimize() {
           <Button onClick={fetchOptimizedTeam}>Optimize Team</Button>
         </div>
       </div>
-      {playerData ? (
+      {isLoading && (
+        <TextLoader
+          messages={[
+            'Fetching data to calculate the optimal team',
+            'Getting the fixtures you selected',
+            'Computing the optimal team',
+          ]}
+          interval={3000}
+        />
+      )}
+      {playerData && metadata ? (
         <>
           <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
             <StatCard
@@ -157,7 +164,10 @@ export default function Optimize() {
                 <h3 className="text-lg font-medium mb-4">
                   Daily Scoring Trend
                 </h3>
-                <DailyScorersChart data={playerData.daily_scorers} />
+                <DailyScorersChart
+                  data={playerData.daily_scorers}
+                  events={metadata.events}
+                />
               </div>
             </div>
             <div className="lg:col-span-1">

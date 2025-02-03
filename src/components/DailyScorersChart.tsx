@@ -9,15 +9,16 @@ import {
   YAxis,
 } from 'recharts'
 
-import { IDailyScorers } from '@/hooks/api'
+import { IDailyScorers, IEvent } from '@/hooks/api'
 
 interface DailyScorersChartProps {
   data: IDailyScorers
+  events: IEvent[]
 }
 
-export function DailyScorersChart({ data }: DailyScorersChartProps) {
-  const chartData = Object.entries(data).map(([date, scorers]) => ({
-    date: new Date(date).toLocaleDateString(),
+export function DailyScorersChart({ data, events }: DailyScorersChartProps) {
+  const chartData = Object.entries(data).map(([gameday, scorers]) => ({
+    gameday: events.find((event) => event.id.toString() === gameday)?.name,
     points: scorers.reduce((acc, scorer) => acc + scorer.points, 0),
     players: scorers,
   }))
@@ -55,7 +56,7 @@ export function DailyScorersChart({ data }: DailyScorersChartProps) {
       <ResponsiveContainer width="100%" height="100%">
         <BarChart data={chartData}>
           <XAxis
-            dataKey="date"
+            dataKey="gameday"
             stroke="#888888"
             fontSize={12}
             tickLine={false}

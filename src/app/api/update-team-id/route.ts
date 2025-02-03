@@ -1,5 +1,5 @@
 import { cookies } from "next/headers"
-import { redirect } from "next/navigation"
+import { redirect } from "@/lib/i18n"
 import { NextRequest } from "next/server"
 
 export async function POST(request: NextRequest) {

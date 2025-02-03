@@ -22,8 +22,9 @@ export const fetchFixtures = async (phase?: string) => {
 
 const useFixtures = (phase?: number) => {
   return useQuery({
-    queryKey: [FIXTURES_QUERY_KEY],
+    queryKey: [FIXTURES_QUERY_KEY, phase],
     queryFn: () => fetchFixtures(phase?.toString()),
+    enabled: !!phase,
   })
 }
 

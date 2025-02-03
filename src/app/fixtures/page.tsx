@@ -18,15 +18,7 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table'
-import {
-  FIXTURES_QUERY_KEY,
-  IEvent,
-  IFixtures,
-  ITeam,
-  fetchFixtures,
-  useMetadata,
-} from '@/hooks/api'
-import { getQueryClient } from '@/lib/get-query-client'
+import { IEvent, IFixtures, ITeam, useFixtures, useMetadata } from '@/hooks/api'
 
 interface TeamStats {
   team: string
@@ -172,7 +164,7 @@ const FixtureAnalysisTable = ({
 
 export default function Fixtures() {
   const { data } = useMetadata()
-  const currentEventId = data?.events.find((event) => event.is_current)?.id
+  const currentEventId = data?.events.find((event) => event.is_next)?.id
   const currentPhase = currentEventId
     ? data?.phases.find(
         (phase) =>
@@ -182,28 +174,18 @@ export default function Fixtures() {
       )
     : undefined
   const [gameweek, setGameweek] = useState(currentPhase)
-  const [fixtures, setFixtures] = useState<IFixtures[]>([])
-  const queryClient = getQueryClient()
   useEffect(() => {
-    async function getGameweekFixtures(gw?: string) {
-      const data = await queryClient.fetchQuery({
-        queryKey: [FIXTURES_QUERY_KEY],
-        queryFn: () => fetchFixtures(gw),
-      })
-      setFixtures(data)
+    if (currentPhase) {
+      setGameweek(currentPhase)
     }
-    if (gameweek?.id.toString() ?? currentPhase?.id.toString()) {
-      getGameweekFixtures(
-        gameweek?.id.toString() ?? currentPhase?.id.toString(),
-      )
-    }
-  }, [gameweek, currentPhase?.id])
+  }, [currentPhase])
+  const { data: fixtures } = useFixtures(gameweek?.id ?? currentPhase?.id)
 
   return (
     <div className="space-y-6 md:space-y-8">
       <div className="space-y-2">
         <h2 className="scroll-m-20 text-3xl font-semibold tracking-tight transition-colors first:mt-0">
-          Fixtures Analysis
+          Fixtures Analyzer
         </h2>
         <p className="text-xl text-muted-foreground">
           Analyzes fixtures by Gameweek, and orders the teams by the highest

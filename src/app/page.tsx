@@ -19,7 +19,6 @@ import {
   DialogFooter,
   DialogHeader,
   DialogTitle,
-  DialogTrigger,
 } from '@/components/ui/dialog'
 import {
   Form,
@@ -89,9 +88,9 @@ export default function Home() {
   return (
     <>
       <div className="flex justify-between mb-4">
-        <h1 className="scroll-m-20 text-4xl font-extrabold tracking-tight lg:text-5xl">
-          Fantasy NBA
-        </h1>
+        <h2 className="scroll-m-20 text-3xl font-semibold tracking-tight transition-colors first:mt-0">
+          Home
+        </h2>
         <Button variant="outline" onClick={() => setIsDialogOpen(true)}>
           Edit Team ID
         </Button>
