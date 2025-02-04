@@ -30,7 +30,7 @@ export function DailyScorersChart({ data, events }: DailyScorersChartProps) {
         <div className="rounded-lg border bg-background p-4 shadow-lg">
           <p className="font-medium mb-2">{label}</p>
           <p className="text-sm text-muted-foreground mb-2">
-            Total Points: {payload[0].value.toFixed(1)}
+            Total Points: {(payload[0].value / 10).toFixed(1)}
           </p>
           <div className="space-y-1">
             {players.map((player: any) => (
@@ -40,7 +40,7 @@ export function DailyScorersChart({ data, events }: DailyScorersChartProps) {
               >
                 <span className="font-medium">{player.name}</span>
                 <span className="text-muted-foreground">
-                  {player.points.toFixed(1)} pts ({player.position})
+                  {(player.points / 10).toFixed(1)} pts ({player.position})
                 </span>
               </div>
             ))}

@@ -1,4 +1,3 @@
-export * from './currentGameweek'
 export * from './fixtures'
 export * from './metadata'
 export * from './optimize'

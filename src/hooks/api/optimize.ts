@@ -38,12 +38,10 @@ export const optimizeTeam = async (
     .post(`${process.env.NEXT_PUBLIC_API_BASE_URL}/optimize`, {
       headers: {
         'Content-Type': 'application/json',
-        Origin: 'http://localhost:3000',
-        'Acceess-Control-Request-Method': 'POST',
       },
       body: JSON.stringify(phases),
       ...(pointsColumn && { searchParams: { points_column: pointsColumn } }),
-      timeout: 60 * 1000, // 45 seconds
+      timeout: 60 * 1000, // 60 seconds
     })
     .json()
 
