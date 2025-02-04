@@ -52,7 +52,7 @@ export function DailyScorersChart({ data, events }: DailyScorersChartProps) {
   }
 
   return (
-    <div className="h-[300px] w-full animate-fade-in">
+    <div className="h-[400px] w-full animate-fade-in">
       <ResponsiveContainer width="100%" height="100%">
         <BarChart data={chartData}>
           <XAxis

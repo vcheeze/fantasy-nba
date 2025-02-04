@@ -35,9 +35,11 @@ export function PlayerTable({ players }: PlayerTableProps) {
               <TableCell>{player.team}</TableCell>
               <TableCell>{player.position}</TableCell>
               <TableCell className="text-right">
-                {player.points_per_game.toFixed(1)}
+                {(player.points_per_game / 10).toFixed(1)}
               </TableCell>
-              <TableCell className="text-right">${player.cost}</TableCell>
+              <TableCell className="text-right">
+                ${(player.cost / 10).toFixed(1)}
+              </TableCell>
             </TableRow>
           ))}
         </TableBody>
