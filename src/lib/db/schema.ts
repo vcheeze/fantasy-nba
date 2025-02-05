@@ -1,11 +1,4 @@
-import {
-  integer,
-  pgEnum,
-  pgTable,
-  text,
-  timestamp,
-  varchar,
-} from 'drizzle-orm/pg-core'
+import { integer, pgEnum, pgTable, text, timestamp } from 'drizzle-orm/pg-core'
 
 export const featureStatus = pgEnum('feature_status', [
   'under-review',

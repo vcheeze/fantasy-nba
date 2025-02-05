@@ -1,7 +1,7 @@
 // app/api/features/route.ts
 import { cookies } from 'next/headers'
 
-import { eq } from 'drizzle-orm'
+import { desc, eq } from 'drizzle-orm'
 
 import { db } from '@/lib/db'
 import { featureVotes, features } from '@/lib/db/schema'
@@ -27,7 +27,7 @@ async function getVotedFeatures(): Promise<number[]> {
 export async function GET() {
   try {
     const [featuresList, votedFeatures] = await Promise.all([
-      db.select().from(features).orderBy(features.votes),
+      db.select().from(features).orderBy(desc(features.votes)),
       getVotedFeatures(),
     ])
 

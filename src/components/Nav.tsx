@@ -1,6 +1,6 @@
 'use client'
 
-import { ChartLine, Home, Moon, Sun, Users } from 'lucide-react'
+import { ChartLine, Home, Map, Moon, Sun, Users } from 'lucide-react'
 import { useTheme } from 'next-themes'
 
 import { Button } from '@/components/ui/button'
@@ -29,6 +29,11 @@ export default function Nav() {
       name: 'Optimal Team',
       link: '/optimize',
       icon: <Users />,
+    },
+    {
+      name: 'Roadmap',
+      link: '/features',
+      icon: <Map />,
     },
   ]
 
