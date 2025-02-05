@@ -4,6 +4,8 @@ import { useEffect, useState } from 'react'
 
 import { AnimatePresence, motion } from 'motion/react'
 
+// maybe switch to https://21st.dev/motion-primitives/text-shimmer/default?
+
 interface LoadingTextProps {
   text: string
   dots: string

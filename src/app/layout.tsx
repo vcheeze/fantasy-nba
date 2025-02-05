@@ -5,6 +5,7 @@ import { LanguageProvider } from '@inlang/paraglide-next'
 import { GoogleAnalytics } from '@next/third-parties/google'
 
 import Nav from '@/components/Nav'
+import { Toaster } from '@/components/ui/sonner'
 import { languageTag } from '@/paraglide/runtime.js'
 
 import './globals.css'
@@ -38,6 +39,7 @@ export default function RootLayout({
           >
             <Nav />
             <div className="container mx-auto p-8 max-sm:mb-12">{children}</div>
+            <Toaster />
           </Providers>
         </body>
         <GoogleAnalytics gaId="G-0187RMBX59" />
