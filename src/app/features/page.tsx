@@ -101,8 +101,8 @@ export default function FeatureVotingPage() {
         </h2>
         <p className="text-xl text-muted-foreground">
           A list of upcoming features that you can upvote. No provision to
-          submit new features yet, but I'm planning to add it as one possible
-          feature ( • ᴗ - )
+          submit new features yet, but I&apos;m planning to add it as one
+          possible feature ( • ᴗ - )
         </p>
       </div>
       <div className="space-y-4">
@@ -124,43 +124,6 @@ export default function FeatureVotingPage() {
               </Card>
             ))
           : features.map((feature) => (
-              // <Card key={feature.id}>
-              //   <CardHeader>
-              //     <div className="flex items-center justify-between">
-              //       <div>
-              //         <CardTitle>{feature.title}</CardTitle>
-              //         <CardDescription className="mt-2">
-              //           {feature.description}
-              //         </CardDescription>
-              //       </div>
-              //       <Button
-              //         onClick={() => handleVote(feature.id)}
-              //         variant={
-              //           votedFeatures.includes(feature.id)
-              //             ? 'secondary'
-              //             : 'outline'
-              //         }
-              //         className="min-w-[100px]"
-              //         disabled={votedFeatures.includes(feature.id)}
-              //       >
-              //         <ThumbsUp
-              //           className={`mr-2 h-4 w-4 ${
-              //             votedFeatures.includes(feature.id)
-              //               ? 'fill-current'
-              //               : ''
-              //           }`}
-              //         />
-              //         {feature.votes}
-              //       </Button>
-              //     </div>
-              //   </CardHeader>
-              //   <CardContent>
-              //     <Badge className={`${getStatusColor(feature.status)}`}>
-              //       {feature.status.replace('-', ' ').charAt(0).toUpperCase() +
-              //         feature.status.slice(1)}
-              //     </Badge>
-              //   </CardContent>
-              // </Card>
               <Card key={feature.id} className="overflow-hidden">
                 <CardHeader>
                   <div className="flex flex-col sm:flex-row sm:items-center gap-4">
