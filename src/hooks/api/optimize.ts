@@ -88,7 +88,7 @@ const useOptimizeTeam = (
   transfers?: ITransfer,
 ) => {
   return useQuery({
-    queryKey: ['optimize', gamedays, pointsColumn, picks],
+    queryKey: ['optimize', gamedays, pointsColumn, picks, transfers],
     queryFn: () => optimizeTeam(gamedays, pointsColumn, picks, transfers),
     enabled: !!gamedays,
   })

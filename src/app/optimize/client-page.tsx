@@ -107,7 +107,13 @@ export default function Optimize() {
     )
     try {
       const data = await queryClient.fetchQuery({
-        queryKey: ['optimize', gamedays, pointsColumn],
+        queryKey: [
+          'optimize',
+          gamedays,
+          pointsColumn,
+          myTeam?.picks,
+          myTeam?.transfers,
+        ],
         queryFn: () =>
           optimizeTeam(
             gamedays,
