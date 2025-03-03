@@ -49,9 +49,9 @@ export function parseCookieString(cookieString: string): CookieDetails[] {
           break
         case 'samesite':
           currentCookie.options!.sameSite = optionValue as
-            | 'Strict'
-            | 'Lax'
-            | 'None'
+            | 'strict'
+            | 'lax'
+            | 'none'
           break
         case 'httponly':
           currentCookie.options!.httpOnly = true
