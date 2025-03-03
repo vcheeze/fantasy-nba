@@ -1,7 +1,8 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { useCallback, useEffect, useState } from 'react'
 
+import { useAtom } from 'jotai'
 import {
   Cell,
   Legend,
@@ -15,6 +16,7 @@ import { DailyScorersChart } from '@/components/DailyScorersChart'
 import { PlayerTable } from '@/components/PlayerTable'
 import { StatCard } from '@/components/StatCard'
 import { TextLoader } from '@/components/TextLoader'
+import { TransferSummary } from '@/components/TransferSummary'
 import { Button } from '@/components/ui/button'
 import { Label } from '@/components/ui/label'
 import {
@@ -24,12 +26,19 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select'
-import { IOptimizedTeam, optimizeTeam, useMetadata } from '@/hooks/api'
+import {
+  IOptimizedTeam,
+  Position,
+  optimizeTeam,
+  useMetadata,
+  useMyTeam,
+} from '@/hooks/api'
 import { getQueryClient } from '@/lib/get-query-client'
+import { teamIdAtom } from '@/store'
 
 export default function Optimize() {
-  const [startGameweek, setStartGameweek] = useState<number>()
-  const [stopGameweek, setStopGameweek] = useState<number>()
+  const [startGameday, setStartGameday] = useState<number>()
+  const [stopGameday, setStopGameday] = useState<number>()
   const [pointsColumn, setPointsColumn] = useState<string>('form')
   const [isLoading, setIsLoading] = useState(false)
   const [playerData, setPlayerData] = useState<IOptimizedTeam>()
@@ -37,31 +46,32 @@ export default function Optimize() {
   const { data: metadata } = useMetadata()
 
   const currentEventIndex = metadata?.events.findIndex((event) => event.is_next)
-  const MAX_PERIOD = 21 // 21 Gamedays
+  const MAX_PERIOD = 14 // 14 Gamedays
   const eventOptions =
     metadata?.events && currentEventIndex && currentEventIndex > -1
       ? metadata.events.slice(currentEventIndex, currentEventIndex + MAX_PERIOD)
       : []
 
   useEffect(() => {
-    if (currentEventIndex && currentEventIndex > -1) {
-      setStartGameweek(metadata?.events[currentEventIndex].id)
+    if (!startGameday && currentEventIndex && currentEventIndex > -1) {
+      setStartGameday(metadata?.events[currentEventIndex].id)
     }
-  }, [currentEventIndex, metadata?.events])
+  }, [startGameday, currentEventIndex, metadata?.events])
 
   // Calculate court position distribution data
   const courtPositionData =
-    playerData?.selected_players.reduce(
+    playerData?.squad.reduce(
       (acc, player) => {
         const position = player.position
         if (!acc[position]) {
           acc[position] = {
-            position,
+            position:
+              position === Position.BACK_COURT ? 'Back Court' : 'Front Court',
             value: 0,
             players: 0,
           }
         }
-        acc[position].value += player.points_per_game / 10
+        acc[position].value += player.points / 10
         acc[position].players += 1
         return acc
       },
@@ -72,35 +82,46 @@ export default function Optimize() {
     ) ?? {}
   const positionDistributionData = Object.values(courtPositionData)
 
-  console.log('positionDistributionData :>> ', positionDistributionData)
   const COLORS = [
     'hsl(var(--chart-1))',
     'hsl(var(--chart-2))',
-    '#FFBB28',
-    '#FF8042',
-    '#8884d8',
+    'hsl(var(--chart-3))',
+    'hsl(var(--chart-4))',
+    'hsl(var(--chart-5))',
   ]
 
+  const [teamId] = useAtom(teamIdAtom)
+
+  const { data: myTeam } = useMyTeam(teamId)
+
+  console.log('myTeam :>> ', myTeam)
+
   const queryClient = getQueryClient()
-  const fetchOptimizedTeam = async () => {
-    if (!startGameweek || !stopGameweek) return
+  const fetchOptimizedTeam = useCallback(async () => {
+    if (!startGameday || !stopGameday) return
 
     setIsLoading(true)
-    const gameweeks = Array.from(
-      { length: stopGameweek - startGameweek + 1 },
-      (_, i) => i + startGameweek,
+    const gamedays = Array.from(
+      { length: stopGameday - startGameday + 1 },
+      (_, i) => i + startGameday,
     )
     try {
       const data = await queryClient.fetchQuery({
-        queryKey: ['optimize', gameweeks, pointsColumn],
-        queryFn: () => optimizeTeam(gameweeks, pointsColumn),
+        queryKey: ['optimize', gamedays, pointsColumn],
+        queryFn: () =>
+          optimizeTeam(
+            gamedays,
+            pointsColumn,
+            myTeam?.picks || [],
+            myTeam?.transfers,
+          ),
       })
       setPlayerData(data)
     } catch (error) {
       console.log('error :>> ', error)
     }
     setIsLoading(false)
-  }
+  }, [startGameday, stopGameday, myTeam])
 
   return (
     <div className="space-y-6 md:space-y-8">
@@ -128,8 +149,8 @@ export default function Optimize() {
           <div>
             <Label>Starting Gameweek</Label>
             <Select
-              value={startGameweek?.toString()}
-              onValueChange={(value) => setStartGameweek(parseInt(value))}
+              value={startGameday?.toString()}
+              onValueChange={(value) => setStartGameday(parseInt(value))}
             >
               <SelectTrigger className="w-full">
                 <SelectValue placeholder="Gameweek" />
@@ -146,8 +167,8 @@ export default function Optimize() {
           <div>
             <Label>Ending Gameweek</Label>
             <Select
-              value={stopGameweek?.toString()}
-              onValueChange={(value) => setStopGameweek(parseInt(value))}
+              value={stopGameday?.toString()}
+              onValueChange={(value) => setStopGameday(parseInt(value))}
             >
               <SelectTrigger className="w-full">
                 <SelectValue placeholder="Gameweek" />
@@ -194,23 +215,25 @@ export default function Optimize() {
           <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
             <StatCard
               title="Total Points"
-              value={(playerData.total_points / 10).toLocaleString()}
-              valueClassName="text-emerald-600"
+              value={
+                playerData.points.transfer_penalty > 0
+                  ? `${(playerData.points.adjusted_points / 10).toLocaleString()} (-${(playerData.points.transfer_penalty / 10).toLocaleString()})`
+                  : (playerData.points.adjusted_points / 10).toLocaleString()
+              }
+              valueClassName="text-chart-2"
             />
             <StatCard
               title="Total Cost"
               value={`$${(playerData.total_cost / 10).toLocaleString()}`}
-              valueClassName="text-slate-600"
             />
             <StatCard
               title="Average Points/Day"
               value={(playerData.average_points_per_day / 10).toFixed(1)}
-              valueClassName="text-emerald-600"
+              valueClassName="text-chart-2"
             />
             <StatCard
-              title="Scoring Days"
-              value={playerData.scoring_days}
-              valueClassName="text-slate-600"
+              title="Total Games Played"
+              value={playerData.total_games}
             />
           </div>
 
@@ -221,7 +244,7 @@ export default function Optimize() {
                   Daily Scoring Trend
                 </h3>
                 <DailyScorersChart
-                  data={playerData.daily_scorers}
+                  data={playerData.daily_starters}
                   events={metadata.events}
                 />
               </div>
@@ -259,7 +282,7 @@ export default function Optimize() {
                 </div>
                 {/* <div className="space-y-4">
                   {Object.entries(
-                    playerData.selected_players.reduce(
+                    playerData.squad.reduce(
                       (acc, player) => ({
                         ...acc,
                         [player.position]: (acc[player.position] || 0) + 1,
@@ -283,8 +306,19 @@ export default function Optimize() {
           </div>
 
           <div className="rounded-lg border bg-card p-6">
+            <h3 className="text-lg font-medium mb-4">Transfers</h3>
+            <TransferSummary
+              data={{
+                transfers_by_event: playerData.transfers_by_event,
+                transfer_summary: playerData.transfer_summary,
+              }}
+              events={metadata.events}
+            />
+          </div>
+
+          <div className="rounded-lg border bg-card p-6">
             <h3 className="text-lg font-medium mb-4">Selected Players</h3>
-            <PlayerTable players={playerData.selected_players} />
+            <PlayerTable players={playerData.squad} />
           </div>
         </>
       ) : (

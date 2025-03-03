@@ -6,7 +6,7 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table'
-import { IPlayer } from '@/hooks/api'
+import { IPlayer, Position } from '@/hooks/api'
 
 interface PlayerTableProps {
   players: IPlayer[]
@@ -33,9 +33,13 @@ export function PlayerTable({ players }: PlayerTableProps) {
             >
               <TableCell className="font-medium">{player.name}</TableCell>
               <TableCell>{player.team}</TableCell>
-              <TableCell>{player.position}</TableCell>
+              <TableCell>
+                {player.position === Position.BACK_COURT
+                  ? 'Back Court'
+                  : 'Front Court'}
+              </TableCell>
               <TableCell className="text-right">
-                {(player.points_per_game / 10).toFixed(1)}
+                {(player.points / 10).toFixed(1)}
               </TableCell>
               <TableCell className="text-right">
                 ${(player.cost / 10).toFixed(1)}

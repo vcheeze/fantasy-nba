@@ -9,10 +9,10 @@ import {
   YAxis,
 } from 'recharts'
 
-import { IDailyScorers, IEvent } from '@/hooks/api'
+import { IDailyStarters, IEvent, Position } from '@/hooks/api'
 
 interface DailyScorersChartProps {
-  data: IDailyScorers
+  data: IDailyStarters
   events: IEvent[]
 }
 
@@ -40,7 +40,8 @@ export function DailyScorersChart({ data, events }: DailyScorersChartProps) {
               >
                 <span className="font-medium">{player.name}</span>
                 <span className="text-muted-foreground">
-                  {(player.points / 10).toFixed(1)} pts ({player.position})
+                  {(player.points / 10).toFixed(1)} pts (
+                  {player.position === Position.BACK_COURT ? 'BC' : 'FC'})
                 </span>
               </div>
             ))}

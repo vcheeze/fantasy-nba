@@ -2,7 +2,15 @@
 
 import { useEffect, useState } from 'react'
 
+import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
+import { Checkbox } from '@/components/ui/checkbox'
+import {
+  Collapsible,
+  CollapsibleContent,
+  CollapsibleTrigger,
+} from '@/components/ui/collapsible'
+import { Input } from '@/components/ui/input'
 import {
   Select,
   SelectContent,
@@ -10,6 +18,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select'
+import { Skeleton } from '@/components/ui/skeleton'
 import {
   Table,
   TableBody,
@@ -19,6 +28,7 @@ import {
   TableRow,
 } from '@/components/ui/table'
 import { IEvent, IFixtures, ITeam, useFixtures, useMetadata } from '@/hooks/api'
+import { cn } from '@/lib/utils'
 
 interface TeamStats {
   team: string
@@ -26,6 +36,69 @@ interface TeamStats {
   homeGames: number
   awayGames: number
   fixtureAppearances: { [key: number]: 'H' | 'A' | null }
+}
+
+const SkeletonTable = () => {
+  return (
+    <Card className="w-full">
+      <CardHeader>
+        <CardTitle>Team Fixture Analysis</CardTitle>
+      </CardHeader>
+      <CardContent>
+        <div className="overflow-x-auto">
+          <Table>
+            <TableHeader>
+              <TableRow className="bg-muted">
+                <TableHead className="text-left">
+                  <Skeleton className="h-4 w-20" />
+                </TableHead>
+                {Array.from({ length: 6 }).map((_, i) => (
+                  <TableHead key={i} className="text-center">
+                    <Skeleton className="h-4 w-12 mx-auto" />
+                  </TableHead>
+                ))}
+                <TableHead className="text-center">
+                  <Skeleton className="h-4 w-16 mx-auto" />
+                </TableHead>
+                <TableHead className="text-center">
+                  <Skeleton className="h-4 w-16 mx-auto" />
+                </TableHead>
+                <TableHead className="text-center">
+                  <Skeleton className="h-4 w-16 mx-auto" />
+                </TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              {Array.from({ length: 8 }).map((_, index) => (
+                <TableRow
+                  key={index}
+                  className={index % 2 === 0 ? 'bg-background' : 'bg-muted/25'}
+                >
+                  <TableCell>
+                    <Skeleton className="h-4 w-32" />
+                  </TableCell>
+                  {Array.from({ length: 6 }).map((_, i) => (
+                    <TableCell key={i} className="text-center">
+                      <Skeleton className="h-6 w-6 rounded-full mx-auto" />
+                    </TableCell>
+                  ))}
+                  <TableCell className="text-center">
+                    <Skeleton className="h-6 w-8 rounded-full mx-auto" />
+                  </TableCell>
+                  <TableCell className="text-center">
+                    <Skeleton className="h-4 w-6 mx-auto" />
+                  </TableCell>
+                  <TableCell className="text-center">
+                    <Skeleton className="h-4 w-6 mx-auto" />
+                  </TableCell>
+                </TableRow>
+              ))}
+            </TableBody>
+          </Table>
+        </div>
+      </CardContent>
+    </Card>
+  )
 }
 
 const FixtureAnalysisTable = ({
@@ -37,6 +110,10 @@ const FixtureAnalysisTable = ({
   events: IEvent[]
   teams: ITeam[]
 }) => {
+  const [selectedTeams, setSelectedTeams] = useState<string[]>([]) // Store selected team IDs
+  const [isAllSelected, setIsAllSelected] = useState(true)
+  const [searchQuery, setSearchQuery] = useState('')
+  const [isFilterOpen, setIsFilterOpen] = useState(false)
   const processFixtures = () => {
     // Get unique events sorted
     const gamedays = Array.from(new Set(fixtures.map((f) => f.event))).sort(
@@ -93,10 +170,107 @@ const FixtureAnalysisTable = ({
 
   const { gamedays, teamStats } = processFixtures()
 
+  // Toggle all teams selection
+  const toggleAllTeams = () => {
+    if (isAllSelected) {
+      setSelectedTeams([])
+    } else {
+      setSelectedTeams(teams.map((team) => team.id.toString()))
+    }
+    setIsAllSelected(!isAllSelected)
+  }
+
+  // Toggle individual team selection
+  const toggleTeam = (teamId: string) => {
+    setSelectedTeams((prev) => {
+      const newSelection = prev.includes(teamId)
+        ? prev.filter((id) => id !== teamId)
+        : [...prev, teamId]
+      setIsAllSelected(newSelection.length === teams.length)
+      return newSelection
+    })
+  }
+
+  // Filter teamStats based on selection
+  const filteredTeamStats = teamStats.filter((stats) =>
+    selectedTeams.length === 0 ? true : selectedTeams.includes(stats.team),
+  )
+
   return (
     <Card className="w-full">
       <CardHeader>
-        <CardTitle>Team Fixture Analysis</CardTitle>
+        <div className="flex items-center justify-between">
+          <CardTitle>Team Fixture Analysis</CardTitle>
+          <Button
+            variant="outline"
+            size="sm"
+            className="text-xs"
+            onClick={() => setIsFilterOpen(!isFilterOpen)}
+          >
+            {selectedTeams.length === 0
+              ? 'All Teams'
+              : `${selectedTeams.length} Team${selectedTeams.length === 1 ? '' : 's'} Selected`}
+          </Button>
+        </div>
+        <Collapsible open={isFilterOpen} onOpenChange={setIsFilterOpen}>
+          <CollapsibleContent className="mt-4 space-y-4">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                <Checkbox
+                  id="select-all"
+                  checked={isAllSelected}
+                  onCheckedChange={toggleAllTeams}
+                />
+                <label
+                  htmlFor="select-all"
+                  className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
+                >
+                  Select All Teams
+                </label>
+              </div>
+              <Input
+                type="search"
+                placeholder="Search teams..."
+                className="w-[200px]"
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+              />
+            </div>
+            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-2">
+              {teams
+                .slice() // Create a copy to avoid mutating the original array
+                .sort((a, b) => a.name.localeCompare(b.name))
+                .filter((team) =>
+                  team.name.toLowerCase().includes(searchQuery.toLowerCase()),
+                )
+                .map((team) => (
+                  <div
+                    key={team.id}
+                    className={cn(
+                      'flex items-center gap-2 p-2 rounded-lg transition-colors',
+                      selectedTeams.includes(team.id.toString())
+                        ? 'bg-primary/10'
+                        : 'hover:bg-muted/50',
+                    )}
+                    onClick={() => toggleTeam(team.id.toString())}
+                    role="button"
+                    tabIndex={0}
+                  >
+                    <Checkbox
+                      id={`team-${team.id}`}
+                      checked={selectedTeams.includes(team.id.toString())}
+                    />
+                    <label
+                      htmlFor={`team-${team.id}`}
+                      className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70 cursor-pointer"
+                    >
+                      {team.name}
+                    </label>
+                  </div>
+                ))}
+            </div>
+          </CollapsibleContent>
+        </Collapsible>
       </CardHeader>
       <CardContent>
         <div className="overflow-x-auto">
@@ -117,7 +291,7 @@ const FixtureAnalysisTable = ({
               </TableRow>
             </TableHeader>
             <TableBody>
-              {teamStats.map((stats, index) => (
+              {filteredTeamStats.map((stats, index) => (
                 <TableRow
                   key={stats.team}
                   className={index % 2 === 0 ? 'bg-background' : 'bg-muted/25'}
@@ -163,7 +337,7 @@ const FixtureAnalysisTable = ({
 }
 
 export default function Fixtures() {
-  const { data } = useMetadata()
+  const { data, isLoading } = useMetadata()
   const currentEventId = data?.events.find((event) => event.is_next)?.id
   const currentPhase = currentEventId
     ? data?.phases.find(
@@ -179,7 +353,22 @@ export default function Fixtures() {
       setGameweek(currentPhase)
     }
   }, [currentPhase])
-  const { data: fixtures } = useFixtures(gameweek?.id ?? currentPhase?.id)
+  const { data: fixtures, isLoading: isFixturesLoading } = useFixtures(
+    gameweek?.id ?? currentPhase?.id,
+  )
+
+  if (isLoading || isFixturesLoading) {
+    return (
+      <div className="space-y-6 md:space-y-8">
+        <div className="space-y-2">
+          <Skeleton className="h-9 w-48" />
+          <Skeleton className="h-20 w-full" />
+        </div>
+        <Skeleton className="h-10 w-[180px]" />
+        <SkeletonTable />
+      </div>
+    )
+  }
 
   return (
     <div className="space-y-6 md:space-y-8">

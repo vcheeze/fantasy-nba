@@ -1,5 +1,6 @@
 export * from './fixtures'
 export * from './metadata'
+export * from './myTeam'
 export * from './optimize'
 export * from './teamDetails'
 export * from './teamHistory'

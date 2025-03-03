@@ -1,58 +1,96 @@
 import { useQuery } from '@tanstack/react-query'
 import ky from 'ky'
 
-export interface IPlayer {
-  name: string
-  team: string
-  games: number
-  points_per_game: number
-  position: 'Back Court' | 'Front Court'
-  cost: number
+import { IPick, ITransfer } from './myTeam'
+
+export enum Position {
+  BACK_COURT = 1,
+  FRONT_COURT = 2,
 }
 
-export interface IDailyScorer {
+export interface IPlayer {
+  id: number
+  name: string
+  team: number
+  games: number
+  form: number
+  points: number
+  position: Position
+  cost: number
+  team_short: string
+}
+
+export interface IDailyStarter {
   name: string
   team: string
   points: number
-  position: 'Back Court' | 'Front Court'
+  position: Position
 }
 
-export interface IDailyScorers {
-  [date: string]: IDailyScorer[]
+export interface IDailyStarters {
+  [gameweekId: string | number]: IDailyStarter[]
 }
 
 export interface IOptimizedTeam {
-  selected_players: IPlayer[]
-  daily_scorers: IDailyScorers
-  total_points: number
+  squad: IPlayer[]
+  daily_starters: IDailyStarters
+  points: {
+    adjusted_points: number
+    raw_points: number
+    transfer_penalty: number
+  }
   total_cost: number
   average_points_per_day: number
-  scoring_days: number
+  total_games: number
+  transfer_summary: {
+    total_transfers: number
+    penalties_by_phase: Record<
+      string,
+      { transfers: number; excess: number; penalty: number }
+    >
+    total_penalty: 0
+  }
+  transfers_by_event: Record<
+    string,
+    { count: number; in: IPlayer[]; out: IPlayer[] }
+  >
 }
 
 export const optimizeTeam = async (
-  phases?: number[],
+  gamedays?: number[],
   pointsColumn?: string,
+  picks?: IPick[],
+  transfers?: ITransfer,
 ) => {
   const parsed = await ky
     .post(`${process.env.NEXT_PUBLIC_API_BASE_URL}/optimize`, {
+      credentials: 'include',
       headers: {
         'Content-Type': 'application/json',
       },
-      body: JSON.stringify(phases),
-      ...(pointsColumn && { searchParams: { points_column: pointsColumn } }),
-      timeout: 60 * 1000, // 60 seconds
+      body: JSON.stringify({ gamedays, picks, transfers }),
+      ...(pointsColumn && {
+        searchParams: {
+          ...(pointsColumn && { points_column: pointsColumn }),
+        },
+      }),
+      timeout: 120 * 1000, // 60 seconds
     })
     .json()
 
   return parsed as IOptimizedTeam
 }
 
-const useOptimizeTeam = (phases?: number[], pointsColumn?: string) => {
+const useOptimizeTeam = (
+  gamedays?: number[],
+  pointsColumn?: string,
+  picks?: IPick[],
+  transfers?: ITransfer,
+) => {
   return useQuery({
-    queryKey: ['optimize', phases, pointsColumn],
-    queryFn: () => optimizeTeam(phases, pointsColumn),
-    enabled: !!phases,
+    queryKey: ['optimize', gamedays, pointsColumn, picks],
+    queryFn: () => optimizeTeam(gamedays, pointsColumn, picks, transfers),
+    enabled: !!gamedays,
   })
 }
 
