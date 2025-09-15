@@ -13,10 +13,12 @@ import {
 } from 'recharts'
 
 import { DailyScorersChart } from '@/components/DailyScorersChart'
+import { PlayerSelection } from '@/components/PlayerSelection'
 import { PlayerTable } from '@/components/PlayerTable'
 import { StatCard } from '@/components/StatCard'
 import { TextLoader } from '@/components/TextLoader'
 import { TransferSummary } from '@/components/TransferSummary'
+import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Label } from '@/components/ui/label'
 import {
@@ -27,7 +29,18 @@ import {
   SelectValue,
 } from '@/components/ui/select'
 import {
+  Sheet,
+  SheetClose,
+  SheetContent,
+  SheetDescription,
+  SheetFooter,
+  SheetHeader,
+  SheetTitle,
+  SheetTrigger,
+} from '@/components/ui/sheet'
+import {
   IOptimizedTeam,
+  IPhase,
   Position,
   optimizeTeam,
   useMetadata,
@@ -37,26 +50,53 @@ import { getQueryClient } from '@/lib/get-query-client'
 import { teamIdAtom } from '@/store'
 
 export default function Optimize() {
-  const [startGameday, setStartGameday] = useState<number>()
-  const [stopGameday, setStopGameday] = useState<number>()
+  const [selectedPhase, setSelectedPhase] = useState<IPhase | undefined>()
   const [pointsColumn, setPointsColumn] = useState<string>('form')
   const [isLoading, setIsLoading] = useState(false)
   const [playerData, setPlayerData] = useState<IOptimizedTeam>()
+  const [showPlayerSelection, setShowPlayerSelection] = useState(false)
+  const [includedPlayers, setIncludedPlayers] = useState<number[]>([])
+  const [excludedPlayers, setExcludedPlayers] = useState<number[]>([])
+  const [selectionMode, setSelectionMode] = useState<'include' | 'exclude'>(
+    'include',
+  )
+  const [sheetOpen, setSheetOpen] = useState(false)
 
   const { data: metadata } = useMetadata()
 
-  const currentEventIndex = metadata?.events.findIndex((event) => event.is_next)
-  const MAX_PERIOD = 14 // 14 Gamedays
-  const eventOptions =
-    metadata?.events && currentEventIndex && currentEventIndex > -1
-      ? metadata.events.slice(currentEventIndex, currentEventIndex + MAX_PERIOD)
+  const currentEventIndex =
+    metadata?.events?.findIndex((event) => event.is_next) ?? -1
+  const currentEvent =
+    currentEventIndex > -1 && metadata?.events
+      ? metadata.events[currentEventIndex]
+      : undefined
+
+  // Find the current phase based on the current event
+  // Skip the first phase (id=1) which is an "Overall" phase covering all events
+  const currentPhaseIndex =
+    currentEvent && metadata?.phases
+      ? metadata.phases.findIndex(
+          (phase) =>
+            phase.id !== 1 && // Exclude the "Overall" phase
+            currentEvent.id >= phase.start_event &&
+            currentEvent.id <= phase.stop_event,
+        )
+      : -1
+
+  // Get only the current and next phase
+  const phaseOptions =
+    currentPhaseIndex > -1 && metadata?.phases
+      ? metadata.phases.slice(
+          currentPhaseIndex,
+          Math.min(currentPhaseIndex + 2, metadata.phases.length),
+        )
       : []
 
   useEffect(() => {
-    if (!startGameday && currentEventIndex && currentEventIndex > -1) {
-      setStartGameday(metadata?.events[currentEventIndex].id)
+    if (!selectedPhase && phaseOptions && phaseOptions.length > 0) {
+      setSelectedPhase(phaseOptions[0])
     }
-  }, [startGameday, currentEventIndex, metadata?.events])
+  }, [selectedPhase, phaseOptions])
 
   // Calculate court position distribution data
   const courtPositionData =
@@ -98,13 +138,37 @@ export default function Optimize() {
 
   const queryClient = getQueryClient()
   const fetchOptimizedTeam = useCallback(async () => {
-    if (!startGameday || !stopGameday) return
+    if (!selectedPhase || !metadata?.events) return
 
     setIsLoading(true)
-    const gamedays = Array.from(
-      { length: stopGameday - startGameday + 1 },
-      (_, i) => i + startGameday,
-    )
+    // Get all event IDs within the selected phase
+    const gamedays = metadata.events
+      .filter(
+        (event) =>
+          event.id >= selectedPhase.start_event &&
+          event.id <= selectedPhase.stop_event,
+      )
+      .map((event) => event.id)
+
+    // Prepare query parameters
+    const queryParams: any = {
+      gamedays,
+      points_column: pointsColumn,
+      picks: myTeam?.picks || [],
+      transfers: myTeam?.transfers,
+    }
+    console.log('queryParams :>> ', queryParams)
+
+    // Only include force_include if there are players to include
+    if (includedPlayers.length > 0) {
+      queryParams.force_include = includedPlayers
+    }
+
+    // Only include force_exclude if there are players to exclude
+    if (excludedPlayers.length > 0) {
+      queryParams.force_exclude = excludedPlayers
+    }
+
     try {
       const data = await queryClient.fetchQuery({
         queryKey: [
@@ -113,21 +177,25 @@ export default function Optimize() {
           pointsColumn,
           myTeam?.picks,
           myTeam?.transfers,
+          includedPlayers.length > 0 ? includedPlayers : null,
+          excludedPlayers.length > 0 ? excludedPlayers : null,
         ],
-        queryFn: () =>
-          optimizeTeam(
-            gamedays,
-            pointsColumn,
-            myTeam?.picks || [],
-            myTeam?.transfers,
-          ),
+        queryFn: () => optimizeTeam(queryParams),
       })
       setPlayerData(data)
     } catch (error) {
       console.log('error :>> ', error)
     }
     setIsLoading(false)
-  }, [startGameday, stopGameday, myTeam])
+  }, [
+    selectedPhase,
+    metadata?.events,
+    pointsColumn,
+    myTeam,
+    queryClient,
+    includedPlayers,
+    excludedPlayers,
+  ])
 
   return (
     <div className="space-y-6 md:space-y-8">
@@ -153,38 +221,40 @@ export default function Optimize() {
         </p>
         <div className="flex max-sm:flex-col gap-4 md:items-end flex-wrap">
           <div>
-            <Label>Starting Gameweek</Label>
+            <Label>Select Gameweek</Label>
             <Select
-              value={startGameday?.toString()}
-              onValueChange={(value) => setStartGameday(parseInt(value))}
+              value={selectedPhase?.id.toString()}
+              onValueChange={(value) => {
+                const phase = phaseOptions?.find(
+                  (p) => p.id.toString() === value,
+                )
+                setSelectedPhase(phase)
+              }}
             >
               <SelectTrigger className="w-full">
-                <SelectValue placeholder="Gameweek" />
+                <SelectValue placeholder="Select Gameweek" />
               </SelectTrigger>
               <SelectContent>
-                {eventOptions.map((eo) => (
-                  <SelectItem key={eo.id} value={eo.id.toString()}>
-                    {eo.name}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </div>
-          <div>
-            <Label>Ending Gameweek</Label>
-            <Select
-              value={stopGameday?.toString()}
-              onValueChange={(value) => setStopGameday(parseInt(value))}
-            >
-              <SelectTrigger className="w-full">
-                <SelectValue placeholder="Gameweek" />
-              </SelectTrigger>
-              <SelectContent>
-                {eventOptions.map((eo) => (
-                  <SelectItem key={eo.id} value={eo.id.toString()}>
-                    {eo.name}
-                  </SelectItem>
-                ))}
+                {phaseOptions && phaseOptions.length > 0 && (
+                  <>
+                    {phaseOptions[0] && (
+                      <SelectItem
+                        key={phaseOptions[0].id}
+                        value={phaseOptions[0].id.toString()}
+                      >
+                        {phaseOptions[0].name} (Current)
+                      </SelectItem>
+                    )}
+                    {phaseOptions.length > 1 && phaseOptions[1] && (
+                      <SelectItem
+                        key={phaseOptions[1].id}
+                        value={phaseOptions[1].id.toString()}
+                      >
+                        {phaseOptions[1].name} (Next)
+                      </SelectItem>
+                    )}
+                  </>
+                )}
               </SelectContent>
             </Select>
           </div>
@@ -203,7 +273,166 @@ export default function Optimize() {
               </SelectContent>
             </Select>
           </div>
-          <Button onClick={fetchOptimizedTeam}>Optimize Team</Button>
+        </div>
+
+        <div className="mt-6 space-y-6">
+          {/* Force Include Players */}
+          <div>
+            <Label className="mb-2 block">
+              Force Include Players ({includedPlayers.length}/10)
+            </Label>
+            <div className="flex flex-wrap gap-2 mb-3">
+              {includedPlayers.map((playerId) => {
+                const player = metadata?.elements.find((p) => p.id === playerId)
+                return player ? (
+                  <Badge
+                    key={player.id}
+                    variant="secondary"
+                    className="flex items-center gap-1"
+                  >
+                    {player.first_name} {player.second_name}
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      className="h-4 w-4 p-0 rounded-full hover:bg-secondary-foreground/20"
+                      onClick={(e) => {
+                        e.stopPropagation()
+                        setIncludedPlayers((prev) =>
+                          prev.filter((id) => id !== player.id),
+                        )
+                      }}
+                    >
+                      ×
+                    </Button>
+                  </Badge>
+                ) : null
+              })}
+              {includedPlayers.length < 10 && (
+                <Sheet
+                  open={sheetOpen && selectionMode === 'include'}
+                  onOpenChange={(open) => {
+                    setSheetOpen(open)
+                    if (open) setSelectionMode('include')
+                  }}
+                >
+                  <SheetTrigger asChild>
+                    <Button variant="outline" size="sm" className="h-7">
+                      + Add Player
+                    </Button>
+                  </SheetTrigger>
+                  <SheetContent>
+                    <SheetHeader>
+                      <SheetTitle>Select Players to Include</SheetTitle>
+                      <SheetDescription>
+                        These players will be forced into your optimized team.
+                      </SheetDescription>
+                    </SheetHeader>
+                    <div className="mt-6">
+                      <PlayerSelection
+                        onPlayerSelect={(player) => {
+                          if (
+                            !includedPlayers.includes(player.id) &&
+                            includedPlayers.length < 10
+                          ) {
+                            // Remove from excluded if present
+                            if (excludedPlayers.includes(player.id)) {
+                              setExcludedPlayers((prev) =>
+                                prev.filter((id) => id !== player.id),
+                              )
+                            }
+                            // Add to included
+                            setIncludedPlayers((prev) => [...prev, player.id])
+                          }
+                        }}
+                      />
+                    </div>
+                  </SheetContent>
+                </Sheet>
+              )}
+            </div>
+          </div>
+
+          {/* Force Exclude Players */}
+          <div>
+            <Label className="mb-2 block">
+              Force Exclude Players ({excludedPlayers.length}/10)
+            </Label>
+            <div className="flex flex-wrap gap-2 mb-3">
+              {excludedPlayers.map((playerId) => {
+                const player = metadata?.elements.find((p) => p.id === playerId)
+                return player ? (
+                  <Badge
+                    key={player.id}
+                    variant="destructive"
+                    className="flex items-center gap-1"
+                  >
+                    {player.first_name} {player.second_name}
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      className="h-4 w-4 p-0 rounded-full hover:bg-destructive-foreground/20"
+                      onClick={(e) => {
+                        e.stopPropagation()
+                        setExcludedPlayers((prev) =>
+                          prev.filter((id) => id !== player.id),
+                        )
+                      }}
+                    >
+                      ×
+                    </Button>
+                  </Badge>
+                ) : null
+              })}
+              {excludedPlayers.length < 10 && (
+                <Sheet
+                  open={sheetOpen && selectionMode === 'exclude'}
+                  onOpenChange={(open) => {
+                    setSheetOpen(open)
+                    if (open) setSelectionMode('exclude')
+                  }}
+                >
+                  <SheetTrigger asChild>
+                    <Button variant="outline" size="sm" className="h-7">
+                      + Add Player
+                    </Button>
+                  </SheetTrigger>
+                  <SheetContent>
+                    <SheetHeader>
+                      <SheetTitle>Select Players to Exclude</SheetTitle>
+                      <SheetDescription>
+                        These players will be excluded from your optimized team.
+                      </SheetDescription>
+                    </SheetHeader>
+                    <div className="mt-6">
+                      <PlayerSelection
+                        onPlayerSelect={(player) => {
+                          if (
+                            !excludedPlayers.includes(player.id) &&
+                            excludedPlayers.length < 10
+                          ) {
+                            // Remove from included if present
+                            if (includedPlayers.includes(player.id)) {
+                              setIncludedPlayers((prev) =>
+                                prev.filter((id) => id !== player.id),
+                              )
+                            }
+                            // Add to excluded
+                            setExcludedPlayers((prev) => [...prev, player.id])
+                          }
+                        }}
+                      />
+                    </div>
+                  </SheetContent>
+                </Sheet>
+              )}
+            </div>
+          </div>
+
+          <div>
+            <Button onClick={fetchOptimizedTeam} className="mr-2">
+              Optimize Team
+            </Button>
+          </div>
         </div>
       </div>
       {isLoading && (

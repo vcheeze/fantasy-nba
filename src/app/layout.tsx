@@ -14,11 +14,57 @@ import Providers from './providers'
 const inter = Inter({ subsets: ['latin'] })
 
 export const metadata: Metadata = {
-  title: 'Fantasy NBA Planner',
+  title: {
+    default: 'Fantasy NBA Planner | Optimize Your Fantasy Basketball Team',
+    template: '%s | Fantasy NBA Planner'
+  },
   description:
-    'Useful tools and visualizations for your NBA Fantasy Salary Cap Edition team.',
+    'Advanced tools and visualizations for your NBA Fantasy Salary Cap Edition team. Optimize transfers, analyze player stats, and maximize your weekly points.',
+  keywords: [
+    'Fantasy NBA',
+    'Fantasy NBA Salary Cap Edition',
+    'NBA Fantasy Planner',
+    'Fantasy Basketball Optimizer',
+    'NBA Lineup Tool',
+    'Fantasy NBA Transfers',
+    'Player Stats',
+    'Fantasy Basketball Analytics',
+    'Team Performance Visualization',
+    'NBA Fantasy Strategy',
+    'Optimize Fantasy NBA Team',
+  ],
+  authors: [{ name: 'Fantasy NBA Planner Team' }],
+  creator: 'Fantasy NBA Planner',
+  publisher: 'Fantasy NBA Planner',
+  category: 'Sports',
+  applicationName: 'Fantasy NBA Planner',
   verification: {
     google: 'iTDbvkxf0Uls4YGnfxEKt_Sq6Vjti6_GHCTFg0Iv3xg',
+  },
+  openGraph: {
+    type: 'website',
+    locale: 'en_US',
+    url: 'https://fantasy-nba.vercel.app',
+    siteName: 'Fantasy NBA Planner',
+    title: 'Fantasy NBA Planner | Optimize Your Fantasy Basketball Team',
+    description: 'Advanced tools and visualizations for your NBA Fantasy Salary Cap Edition team. Optimize transfers, analyze player stats, and maximize your weekly points.',
+    images: [
+      {
+        url: 'https://fantasy-nba.vercel.app/og-image.jpg',
+        width: 1200,
+        height: 630,
+        alt: 'Fantasy NBA Planner',
+      },
+    ],
+  },
+  twitter: {
+    card: 'summary_large_image',
+    title: 'Fantasy NBA Planner | Optimize Your Fantasy Basketball Team',
+    description: 'Advanced tools and visualizations for your NBA Fantasy Salary Cap Edition team.',
+    images: ['https://fantasy-nba.vercel.app/twitter-image.jpg'],
+  },
+  alternates: {
+    canonical: 'https://fantasy-nba.vercel.app',
   },
 }
 

@@ -56,25 +56,42 @@ export interface IOptimizedTeam {
   >
 }
 
-export const optimizeTeam = async (
-  gamedays?: number[],
-  pointsColumn?: string,
-  picks?: IPick[],
-  transfers?: ITransfer,
-) => {
+interface OptimizeParams {
+  gamedays?: number[]
+  points_column?: string
+  picks?: IPick[]
+  transfers?: ITransfer
+  force_include?: number[]
+  force_exclude?: number[]
+}
+
+export const optimizeTeam = async (params: OptimizeParams) => {
+  const { gamedays, points_column, picks, transfers, force_include, force_exclude } = params
+  
+  const requestBody: any = { gamedays, picks, transfers }
+  
+  // Only include force_include and force_exclude if they have values
+  if (force_include && force_include.length > 0) {
+    requestBody.force_include = force_include
+  }
+  
+  if (force_exclude && force_exclude.length > 0) {
+    requestBody.force_exclude = force_exclude
+  }
+  
   const parsed = await ky
     .post(`${process.env.NEXT_PUBLIC_API_BASE_URL}/optimize`, {
       credentials: 'include',
       headers: {
         'Content-Type': 'application/json',
       },
-      body: JSON.stringify({ gamedays, picks, transfers }),
-      ...(pointsColumn && {
+      body: JSON.stringify(requestBody),
+      ...(points_column && {
         searchParams: {
-          ...(pointsColumn && { points_column: pointsColumn }),
+          points_column,
         },
       }),
-      timeout: 120 * 1000, // 60 seconds
+      timeout: 120 * 1000, // 120 seconds
     })
     .json()
 
@@ -86,10 +103,19 @@ const useOptimizeTeam = (
   pointsColumn?: string,
   picks?: IPick[],
   transfers?: ITransfer,
+  forceInclude?: number[],
+  forceExclude?: number[],
 ) => {
   return useQuery({
-    queryKey: ['optimize', gamedays, pointsColumn, picks, transfers],
-    queryFn: () => optimizeTeam(gamedays, pointsColumn, picks, transfers),
+    queryKey: ['optimize', gamedays, pointsColumn, picks, transfers, forceInclude, forceExclude],
+    queryFn: () => optimizeTeam({
+      gamedays,
+      points_column: pointsColumn,
+      picks,
+      transfers,
+      force_include: forceInclude,
+      force_exclude: forceExclude,
+    }),
     enabled: !!gamedays,
   })
 }
