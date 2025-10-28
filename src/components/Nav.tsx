@@ -1,11 +1,10 @@
 'use client'
 
 import { ChartLine, Home, Map, Moon, Sun, Users } from 'lucide-react'
+import Link from 'next/link'
 import { useTheme } from 'next-themes'
-
 import { Button } from '@/components/ui/button'
 import { useMediaQuery } from '@/hooks/use-media-query'
-import { Link as NextLink } from '@/lib/i18n'
 
 export default function Nav() {
   const { theme, setTheme } = useTheme()
@@ -41,20 +40,20 @@ export default function Nav() {
 
   if (isDesktop) {
     return (
-      <div className="w-full flex p-4 justify-between items-center">
+      <div className="flex w-full items-center justify-between p-4">
         <h1>Fantasy NBA Planner</h1>
         <div className="flex md:gap-2">
           {ROUTES.map((route) => (
             <Button key={route.name} variant="link">
-              <NextLink href={route.link}>{route.name}</NextLink>
+              <Link href={route.link}>{route.name}</Link>
             </Button>
           ))}
         </div>
         <div>
           <Button
+            onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')}
             size="icon"
             variant="outline"
-            onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')}
           >
             {theme === 'dark' ? <Sun /> : <Moon />}
           </Button>
@@ -63,7 +62,7 @@ export default function Nav() {
     )
   }
   return (
-    <div className="w-full flex p-4 justify-between items-center fixed bottom-0 bg-muted z-50">
+    <div className="fixed bottom-0 z-50 flex w-full items-center justify-between bg-muted p-4">
       {ROUTES.map((route) => (
         <Button key={route.name} variant="link">
           <NextLink href={route.link}>{route.icon}</NextLink>
@@ -71,9 +70,9 @@ export default function Nav() {
       ))}
       <div>
         <Button
+          onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')}
           size="icon"
           variant="outline"
-          onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')}
         >
           {theme === 'dark' ? <Sun /> : <Moon />}
         </Button>
