@@ -1,7 +1,7 @@
-"use client";
+'use client'
 
-import { useAtom } from "jotai";
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useAtom } from 'jotai'
+import { useCallback, useEffect, useMemo, useState } from 'react'
 import {
   Cell,
   Legend,
@@ -9,38 +9,38 @@ import {
   PieChart,
   ResponsiveContainer,
   Tooltip,
-} from "recharts";
+} from 'recharts'
 
-import { DailyScorersChart } from "@/components/DailyScorersChart";
-import { PlayerTable } from "@/components/PlayerTable";
-import { StatCard } from "@/components/StatCard";
-import { TextLoader } from "@/components/TextLoader";
-import { TransferSummary } from "@/components/TransferSummary";
-import { Button } from "@/components/ui/button";
-import { Field, FieldLabel } from "@/components/ui/field";
+import { DailyScorersChart } from '@/components/DailyScorersChart'
+import { PlayerTable } from '@/components/PlayerTable'
+import { StatCard } from '@/components/StatCard'
+import { TextLoader } from '@/components/TextLoader'
+import { TransferSummary } from '@/components/TransferSummary'
+import { Button } from '@/components/ui/button'
+import { Field, FieldLabel } from '@/components/ui/field'
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from "@/components/ui/select";
+} from '@/components/ui/select'
 import {
   type IOptimizedTeam,
   optimizeTeam,
   Position,
   useMetadata,
   useMyTeam,
-} from "@/hooks/api";
-import { getQueryClient } from "@/lib/get-query-client";
-import { teamIdAtom } from "@/store";
+} from '@/hooks/api'
+import { getQueryClient } from '@/lib/get-query-client'
+import { teamIdAtom } from '@/store'
 
 export default function Optimize() {
-  const [startGameday, setStartGameday] = useState<number>();
-  const [stopGameday, setStopGameday] = useState<number>();
-  const [pointsColumn, setPointsColumn] = useState<string>("form");
-  const [isLoading, setIsLoading] = useState(false);
-  const [playerData, setPlayerData] = useState<IOptimizedTeam>();
+  const [startGameday, setStartGameday] = useState<number>()
+  const [stopGameday, setStopGameday] = useState<number>()
+  const [pointsColumn, setPointsColumn] = useState<string>('form')
+  const [isLoading, setIsLoading] = useState(false)
+  const [playerData, setPlayerData] = useState<IOptimizedTeam>()
   // const [showPlayerSelection, setShowPlayerSelection] = useState(false);
   // const [includedPlayers, setIncludedPlayers] = useState<number[]>([]);
   // const [excludedPlayers, setExcludedPlayers] = useState<number[]>([]);
@@ -49,23 +49,23 @@ export default function Optimize() {
   // );
   // const [sheetOpen, setSheetOpen] = useState(false);
 
-  const { data: metadata } = useMetadata();
+  const { data: metadata } = useMetadata()
 
-  const [currentEventIndex, eventOptions] = useMemo(() => {
+  const { currentEventIndex, eventOptions } = useMemo(() => {
     // Early return if no metadata
     if (!(metadata?.events && metadata?.phases)) {
-      return { currentEventIndex: -1, eventOptions: undefined };
+      return { currentEventIndex: -1, eventOptions: undefined }
     }
 
     // Find current event
     const currentGamedayIndex = metadata.events.findIndex(
       (event) => event.is_next
-    );
+    )
     if (currentGamedayIndex === -1) {
-      return { currentGamedayIndex: -1, eventOptions: undefined };
+      return { currentGamedayIndex: -1, eventOptions: undefined }
     }
 
-    const currentEvent = metadata.events[currentGamedayIndex];
+    const currentEvent = metadata.events[currentGamedayIndex]
 
     // Find current phase (skip phase id=1 which is "Overall")
     const currentPhaseIndex = metadata.phases.findIndex(
@@ -73,76 +73,76 @@ export default function Optimize() {
         phase.id !== 1 &&
         currentEvent.id >= phase.start_event &&
         currentEvent.id <= phase.stop_event
-    );
+    )
 
     // Determine slice end point
-    let endIndex = metadata.events.length;
-    const nextPhase = metadata.phases[currentPhaseIndex + 1];
+    let endIndex = metadata.events.length
+    const nextPhase = metadata.phases[currentPhaseIndex + 1]
 
     if (nextPhase) {
       const nextPhaseEndIndex = metadata.events.findIndex(
         (event) => event.id === nextPhase.stop_event
-      );
+      )
       if (nextPhaseEndIndex > -1) {
-        endIndex = nextPhaseEndIndex + 1;
+        endIndex = nextPhaseEndIndex + 1
       }
     }
 
-    const options = metadata.events.slice(currentGamedayIndex, endIndex);
+    const options = metadata.events.slice(currentGamedayIndex, endIndex)
 
-    return [currentGamedayIndex, options];
-  }, [metadata]);
+    return { currentEventIndex: currentGamedayIndex, eventOptions: options }
+  }, [metadata])
 
   useEffect(() => {
     if (!startGameday && currentEventIndex && currentEventIndex > -1) {
-      setStartGameday(metadata?.events[currentEventIndex].id);
+      setStartGameday(metadata?.events[currentEventIndex].id)
     }
-  }, [startGameday, currentEventIndex, metadata?.events]);
+  }, [startGameday, currentEventIndex, metadata?.events])
 
   // Calculate court position distribution data
   const courtPositionData =
     playerData?.squad.reduce(
       (acc, player) => {
-        const position = player.position;
+        const position = player.position
         if (!acc[position]) {
           acc[position] = {
             position:
-              position === Position.BACK_COURT ? "Back Court" : "Front Court",
+              position === Position.BACK_COURT ? 'Back Court' : 'Front Court',
             value: 0,
             players: 0,
-          };
+          }
         }
-        acc[position].value += player.points / 10;
-        acc[position].players += 1;
-        return acc;
+        acc[position].value += player.points / 10
+        acc[position].players += 1
+        return acc
       },
       {} as Record<string, { position: string; value: number; players: number }>
-    ) ?? {};
-  const positionDistributionData = Object.values(courtPositionData);
+    ) ?? {}
+  const positionDistributionData = Object.values(courtPositionData)
 
   const COLORS = [
-    "hsl(var(--chart-1))",
-    "hsl(var(--chart-2))",
-    "hsl(var(--chart-3))",
-    "hsl(var(--chart-4))",
-    "hsl(var(--chart-5))",
-  ];
+    'hsl(var(--chart-1))',
+    'hsl(var(--chart-2))',
+    'hsl(var(--chart-3))',
+    'hsl(var(--chart-4))',
+    'hsl(var(--chart-5))',
+  ]
 
-  const [teamId] = useAtom(teamIdAtom);
-  const { data: myTeam } = useMyTeam(teamId);
+  const [teamId] = useAtom(teamIdAtom)
+  const { data: myTeam } = useMyTeam(teamId)
 
-  const queryClient = getQueryClient();
+  const queryClient = getQueryClient()
   const fetchOptimizedTeam = useCallback(async () => {
     if (!(startGameday && stopGameday)) {
-      return;
+      return
     }
 
-    setIsLoading(true);
+    setIsLoading(true)
     // Get all event IDs
     const gamedays = Array.from(
       { length: stopGameday - startGameday + 1 },
       (_, i) => i + startGameday
-    );
+    )
 
     // Prepare query parameters
     const queryParams = {
@@ -150,7 +150,7 @@ export default function Optimize() {
       points_column: pointsColumn,
       picks: myTeam?.picks || [],
       transfers: myTeam?.transfers,
-    };
+    }
 
     // Only include force_include if there are players to include
     // if (includedPlayers.length > 0) {
@@ -165,7 +165,7 @@ export default function Optimize() {
     try {
       const data = await queryClient.fetchQuery({
         queryKey: [
-          "optimize",
+          'optimize',
           gamedays,
           pointsColumn,
           myTeam?.picks,
@@ -174,12 +174,12 @@ export default function Optimize() {
           // excludedPlayers.length > 0 ? excludedPlayers : null,
         ],
         queryFn: () => optimizeTeam(queryParams),
-      });
-      setPlayerData(data);
+      })
+      setPlayerData(data)
     } catch (error) {
-      console.log("error :>> ", error);
+      console.log('error :>> ', error)
     }
-    setIsLoading(false);
+    setIsLoading(false)
   }, [
     startGameday,
     stopGameday,
@@ -188,7 +188,7 @@ export default function Optimize() {
     queryClient,
     // includedPlayers,
     // excludedPlayers,
-  ]);
+  ])
 
   return (
     <div className="space-y-6 md:space-y-8">
@@ -431,9 +431,9 @@ export default function Optimize() {
         <TextLoader
           interval={3000}
           messages={[
-            "Fetching data to calculate the optimal team",
-            "Getting the fixtures you selected",
-            "Computing the optimal team",
+            'Fetching data to calculate the optimal team',
+            'Getting the fixtures you selected',
+            'Computing the optimal team',
           ]}
         />
       )}
@@ -547,5 +547,5 @@ export default function Optimize() {
         </>
       ) : null}
     </div>
-  );
+  )
 }
