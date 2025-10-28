@@ -1,8 +1,7 @@
-'use client'
+"use client";
 
-import { useCallback, useEffect, useState } from 'react'
-
-import { useAtom } from 'jotai'
+import { useAtom } from "jotai";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import {
   Cell,
   Legend,
@@ -10,261 +9,256 @@ import {
   PieChart,
   ResponsiveContainer,
   Tooltip,
-} from 'recharts'
+} from "recharts";
 
-import { DailyScorersChart } from '@/components/DailyScorersChart'
-import { PlayerSelection } from '@/components/PlayerSelection'
-import { PlayerTable } from '@/components/PlayerTable'
-import { StatCard } from '@/components/StatCard'
-import { TextLoader } from '@/components/TextLoader'
-import { TransferSummary } from '@/components/TransferSummary'
-import { Badge } from '@/components/ui/badge'
-import { Button } from '@/components/ui/button'
-import { Label } from '@/components/ui/label'
+import { DailyScorersChart } from "@/components/DailyScorersChart";
+import { PlayerTable } from "@/components/PlayerTable";
+import { StatCard } from "@/components/StatCard";
+import { TextLoader } from "@/components/TextLoader";
+import { TransferSummary } from "@/components/TransferSummary";
+import { Button } from "@/components/ui/button";
+import { Field, FieldLabel } from "@/components/ui/field";
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from '@/components/ui/select'
+} from "@/components/ui/select";
 import {
-  Sheet,
-  SheetClose,
-  SheetContent,
-  SheetDescription,
-  SheetFooter,
-  SheetHeader,
-  SheetTitle,
-  SheetTrigger,
-} from '@/components/ui/sheet'
-import {
-  IOptimizedTeam,
-  IPhase,
-  Position,
+  type IOptimizedTeam,
   optimizeTeam,
+  Position,
   useMetadata,
   useMyTeam,
-} from '@/hooks/api'
-import { getQueryClient } from '@/lib/get-query-client'
-import { teamIdAtom } from '@/store'
+} from "@/hooks/api";
+import { getQueryClient } from "@/lib/get-query-client";
+import { teamIdAtom } from "@/store";
 
 export default function Optimize() {
-  const [selectedPhase, setSelectedPhase] = useState<IPhase | undefined>()
-  const [pointsColumn, setPointsColumn] = useState<string>('form')
-  const [isLoading, setIsLoading] = useState(false)
-  const [playerData, setPlayerData] = useState<IOptimizedTeam>()
-  const [showPlayerSelection, setShowPlayerSelection] = useState(false)
-  const [includedPlayers, setIncludedPlayers] = useState<number[]>([])
-  const [excludedPlayers, setExcludedPlayers] = useState<number[]>([])
-  const [selectionMode, setSelectionMode] = useState<'include' | 'exclude'>(
-    'include',
-  )
-  const [sheetOpen, setSheetOpen] = useState(false)
+  const [startGameday, setStartGameday] = useState<number>();
+  const [stopGameday, setStopGameday] = useState<number>();
+  const [pointsColumn, setPointsColumn] = useState<string>("form");
+  const [isLoading, setIsLoading] = useState(false);
+  const [playerData, setPlayerData] = useState<IOptimizedTeam>();
+  // const [showPlayerSelection, setShowPlayerSelection] = useState(false);
+  // const [includedPlayers, setIncludedPlayers] = useState<number[]>([]);
+  // const [excludedPlayers, setExcludedPlayers] = useState<number[]>([]);
+  // const [selectionMode, setSelectionMode] = useState<"include" | "exclude">(
+  //   "include"
+  // );
+  // const [sheetOpen, setSheetOpen] = useState(false);
 
-  const { data: metadata } = useMetadata()
+  const { data: metadata } = useMetadata();
 
-  const currentEventIndex =
-    metadata?.events?.findIndex((event) => event.is_next) ?? -1
-  const currentEvent =
-    currentEventIndex > -1 && metadata?.events
-      ? metadata.events[currentEventIndex]
-      : undefined
+  const [currentEventIndex, eventOptions] = useMemo(() => {
+    // Early return if no metadata
+    if (!(metadata?.events && metadata?.phases)) {
+      return { currentEventIndex: -1, eventOptions: undefined };
+    }
 
-  // Find the current phase based on the current event
-  // Skip the first phase (id=1) which is an "Overall" phase covering all events
-  const currentPhaseIndex =
-    currentEvent && metadata?.phases
-      ? metadata.phases.findIndex(
-          (phase) =>
-            phase.id !== 1 && // Exclude the "Overall" phase
-            currentEvent.id >= phase.start_event &&
-            currentEvent.id <= phase.stop_event,
-        )
-      : -1
+    // Find current event
+    const currentGamedayIndex = metadata.events.findIndex(
+      (event) => event.is_next
+    );
+    if (currentGamedayIndex === -1) {
+      return { currentGamedayIndex: -1, eventOptions: undefined };
+    }
 
-  // Get only the current and next phase
-  const phaseOptions =
-    currentPhaseIndex > -1 && metadata?.phases
-      ? metadata.phases.slice(
-          currentPhaseIndex,
-          Math.min(currentPhaseIndex + 2, metadata.phases.length),
-        )
-      : []
+    const currentEvent = metadata.events[currentGamedayIndex];
+
+    // Find current phase (skip phase id=1 which is "Overall")
+    const currentPhaseIndex = metadata.phases.findIndex(
+      (phase) =>
+        phase.id !== 1 &&
+        currentEvent.id >= phase.start_event &&
+        currentEvent.id <= phase.stop_event
+    );
+
+    // Determine slice end point
+    let endIndex = metadata.events.length;
+    const nextPhase = metadata.phases[currentPhaseIndex + 1];
+
+    if (nextPhase) {
+      const nextPhaseEndIndex = metadata.events.findIndex(
+        (event) => event.id === nextPhase.stop_event
+      );
+      if (nextPhaseEndIndex > -1) {
+        endIndex = nextPhaseEndIndex + 1;
+      }
+    }
+
+    const options = metadata.events.slice(currentGamedayIndex, endIndex);
+
+    return [currentGamedayIndex, options];
+  }, [metadata]);
 
   useEffect(() => {
-    if (!selectedPhase && phaseOptions && phaseOptions.length > 0) {
-      setSelectedPhase(phaseOptions[0])
+    if (!startGameday && currentEventIndex && currentEventIndex > -1) {
+      setStartGameday(metadata?.events[currentEventIndex].id);
     }
-  }, [selectedPhase, phaseOptions])
+  }, [startGameday, currentEventIndex, metadata?.events]);
 
   // Calculate court position distribution data
   const courtPositionData =
     playerData?.squad.reduce(
       (acc, player) => {
-        const position = player.position
+        const position = player.position;
         if (!acc[position]) {
           acc[position] = {
             position:
-              position === Position.BACK_COURT ? 'Back Court' : 'Front Court',
+              position === Position.BACK_COURT ? "Back Court" : "Front Court",
             value: 0,
             players: 0,
-          }
+          };
         }
-        acc[position].value += player.points / 10
-        acc[position].players += 1
-        return acc
+        acc[position].value += player.points / 10;
+        acc[position].players += 1;
+        return acc;
       },
-      {} as Record<
-        string,
-        { position: string; value: number; players: number }
-      >,
-    ) ?? {}
-  const positionDistributionData = Object.values(courtPositionData)
+      {} as Record<string, { position: string; value: number; players: number }>
+    ) ?? {};
+  const positionDistributionData = Object.values(courtPositionData);
 
   const COLORS = [
-    'hsl(var(--chart-1))',
-    'hsl(var(--chart-2))',
-    'hsl(var(--chart-3))',
-    'hsl(var(--chart-4))',
-    'hsl(var(--chart-5))',
-  ]
+    "hsl(var(--chart-1))",
+    "hsl(var(--chart-2))",
+    "hsl(var(--chart-3))",
+    "hsl(var(--chart-4))",
+    "hsl(var(--chart-5))",
+  ];
 
-  const [teamId] = useAtom(teamIdAtom)
+  const [teamId] = useAtom(teamIdAtom);
+  const { data: myTeam } = useMyTeam(teamId);
 
-  const { data: myTeam } = useMyTeam(teamId)
-
-  console.log('myTeam :>> ', myTeam)
-
-  const queryClient = getQueryClient()
+  const queryClient = getQueryClient();
   const fetchOptimizedTeam = useCallback(async () => {
-    if (!selectedPhase || !metadata?.events) return
+    if (!(startGameday && stopGameday)) {
+      return;
+    }
 
-    setIsLoading(true)
-    // Get all event IDs within the selected phase
-    const gamedays = metadata.events
-      .filter(
-        (event) =>
-          event.id >= selectedPhase.start_event &&
-          event.id <= selectedPhase.stop_event,
-      )
-      .map((event) => event.id)
+    setIsLoading(true);
+    // Get all event IDs
+    const gamedays = Array.from(
+      { length: stopGameday - startGameday + 1 },
+      (_, i) => i + startGameday
+    );
 
     // Prepare query parameters
-    const queryParams: any = {
+    const queryParams = {
       gamedays,
       points_column: pointsColumn,
       picks: myTeam?.picks || [],
       transfers: myTeam?.transfers,
-    }
-    console.log('queryParams :>> ', queryParams)
+    };
 
     // Only include force_include if there are players to include
-    if (includedPlayers.length > 0) {
-      queryParams.force_include = includedPlayers
-    }
+    // if (includedPlayers.length > 0) {
+    //   queryParams.force_include = includedPlayers
+    // }
 
     // Only include force_exclude if there are players to exclude
-    if (excludedPlayers.length > 0) {
-      queryParams.force_exclude = excludedPlayers
-    }
+    // if (excludedPlayers.length > 0) {
+    //   queryParams.force_exclude = excludedPlayers
+    // }
 
     try {
       const data = await queryClient.fetchQuery({
         queryKey: [
-          'optimize',
+          "optimize",
           gamedays,
           pointsColumn,
           myTeam?.picks,
           myTeam?.transfers,
-          includedPlayers.length > 0 ? includedPlayers : null,
-          excludedPlayers.length > 0 ? excludedPlayers : null,
+          // includedPlayers.length > 0 ? includedPlayers : null,
+          // excludedPlayers.length > 0 ? excludedPlayers : null,
         ],
         queryFn: () => optimizeTeam(queryParams),
-      })
-      setPlayerData(data)
+      });
+      setPlayerData(data);
     } catch (error) {
-      console.log('error :>> ', error)
+      console.log("error :>> ", error);
     }
-    setIsLoading(false)
+    setIsLoading(false);
   }, [
-    selectedPhase,
-    metadata?.events,
+    startGameday,
+    stopGameday,
     pointsColumn,
     myTeam,
     queryClient,
-    includedPlayers,
-    excludedPlayers,
-  ])
+    // includedPlayers,
+    // excludedPlayers,
+  ]);
 
   return (
     <div className="space-y-6 md:space-y-8">
       <div className="space-y-2">
-        <h2 className="scroll-m-20 text-3xl font-semibold tracking-tight transition-colors first:mt-0">
+        <h2 className="scroll-m-20 font-semibold text-3xl tracking-tight transition-colors first:mt-0">
           Optimal Team
         </h2>
-        <p className="text-xl text-muted-foreground">
+        <p className="text-muted-foreground text-xl">
           See the optimal team calculated based on player form or points per
-          game, up to 3 Gameweeks into the future. This is ideal for planning
-          your Wildcard chip.
+          game, up to one Gameweeks into the future.
         </p>
       </div>
 
       <div>
-        <h4 className="scroll-m-20 text-xl font-semibold tracking-tight mb-2">
+        <h4 className="mb-2 scroll-m-20 font-semibold text-xl tracking-tight">
           Select how you want to calculate the optimal team.
         </h4>
-        <p className="text-muted-foreground text-sm mb-4">
-          Choose the starting Gameweek, how many Gameweeks to calculate for, and
-          whether you want to calculate based on points per game from the last
-          30 games (form) or from the whole season.
+        <p className="mb-4 text-muted-foreground text-sm">
+          Choose the starting and ending Gamedays, and whether you want to
+          calculate based on points per game from the last 30 games (form) or
+          from the whole season.
         </p>
-        <div className="flex max-sm:flex-col gap-4 md:items-end flex-wrap">
-          <div>
-            <Label>Select Gameweek</Label>
+        <div className="flex flex-wrap gap-4 max-sm:flex-col md:items-end">
+          <Field className="md:w-xs">
+            <FieldLabel>Starting Gameday</FieldLabel>
             <Select
-              value={selectedPhase?.id.toString()}
-              onValueChange={(value) => {
-                const phase = phaseOptions?.find(
-                  (p) => p.id.toString() === value,
-                )
-                setSelectedPhase(phase)
-              }}
+              onValueChange={(value) =>
+                setStartGameday(Number.parseInt(value, 10))
+              }
+              value={startGameday?.toString()}
             >
-              <SelectTrigger className="w-full">
-                <SelectValue placeholder="Select Gameweek" />
+              <SelectTrigger>
+                <SelectValue placeholder="Gameweek" />
               </SelectTrigger>
               <SelectContent>
-                {phaseOptions && phaseOptions.length > 0 && (
-                  <>
-                    {phaseOptions[0] && (
-                      <SelectItem
-                        key={phaseOptions[0].id}
-                        value={phaseOptions[0].id.toString()}
-                      >
-                        {phaseOptions[0].name} (Current)
-                      </SelectItem>
-                    )}
-                    {phaseOptions.length > 1 && phaseOptions[1] && (
-                      <SelectItem
-                        key={phaseOptions[1].id}
-                        value={phaseOptions[1].id.toString()}
-                      >
-                        {phaseOptions[1].name} (Next)
-                      </SelectItem>
-                    )}
-                  </>
-                )}
+                {eventOptions?.map((eo) => (
+                  <SelectItem key={eo.id} value={eo.id.toString()}>
+                    {eo.name}
+                  </SelectItem>
+                ))}
               </SelectContent>
             </Select>
-          </div>
-          <div>
-            <Label>Points Column</Label>
+          </Field>
+          <Field className="md:w-xs">
+            <FieldLabel>Ending Gameday</FieldLabel>
             <Select
-              value={pointsColumn}
-              onValueChange={(value) => setPointsColumn(value)}
+              onValueChange={(value) =>
+                setStopGameday(Number.parseInt(value, 10))
+              }
+              value={stopGameday?.toString()}
             >
-              <SelectTrigger className="w-full md:w-[180px]">
+              <SelectTrigger>
+                <SelectValue placeholder="Gameweek" />
+              </SelectTrigger>
+              <SelectContent>
+                {eventOptions?.map((eo) => (
+                  <SelectItem key={eo.id} value={eo.id.toString()}>
+                    {eo.name}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </Field>
+          <Field className="md:w-[180px]">
+            <FieldLabel>Points Column</FieldLabel>
+            <Select
+              onValueChange={(value) => setPointsColumn(value)}
+              value={pointsColumn}
+            >
+              <SelectTrigger>
                 <SelectValue placeholder="form" />
               </SelectTrigger>
               <SelectContent>
@@ -272,11 +266,12 @@ export default function Optimize() {
                 <SelectItem value="points_per_game">points per game</SelectItem>
               </SelectContent>
             </Select>
-          </div>
+          </Field>
+          <Button className="mr-2" onClick={fetchOptimizedTeam}>
+            Optimize Team
+          </Button>
         </div>
-
-        <div className="mt-6 space-y-6">
-          {/* Force Include Players */}
+        {/* <div className="mt-6 space-y-6">
           <div>
             <Label className="mb-2 block">
               Force Include Players ({includedPlayers.length}/10)
@@ -352,7 +347,6 @@ export default function Optimize() {
             </div>
           </div>
 
-          {/* Force Exclude Players */}
           <div>
             <Label className="mb-2 block">
               Force Exclude Players ({excludedPlayers.length}/10)
@@ -429,20 +423,18 @@ export default function Optimize() {
           </div>
 
           <div>
-            <Button onClick={fetchOptimizedTeam} className="mr-2">
-              Optimize Team
-            </Button>
+            
           </div>
-        </div>
+        </div> */}
       </div>
       {isLoading && (
         <TextLoader
-          messages={[
-            'Fetching data to calculate the optimal team',
-            'Getting the fixtures you selected',
-            'Computing the optimal team',
-          ]}
           interval={3000}
+          messages={[
+            "Fetching data to calculate the optimal team",
+            "Getting the fixtures you selected",
+            "Computing the optimal team",
+          ]}
         />
       )}
       {playerData && metadata ? (
@@ -451,9 +443,9 @@ export default function Optimize() {
             <StatCard
               title="Total Points"
               value={
-                playerData.points.transfer_penalty > 0
-                  ? `${(playerData.points.adjusted_points / 10).toLocaleString()} (-${(playerData.points.transfer_penalty / 10).toLocaleString()})`
-                  : (playerData.points.adjusted_points / 10).toLocaleString()
+                playerData.transfers.cost > 0
+                  ? `${(playerData.true_gameweek_score / 10).toLocaleString()} (-${(playerData.transfers.cost / 10).toLocaleString()})`
+                  : (playerData.true_gameweek_score / 10).toLocaleString()
               }
               valueClassName="text-chart-2"
             />
@@ -475,7 +467,7 @@ export default function Optimize() {
           <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
             <div className="lg:col-span-2">
               <div className="rounded-lg border bg-card p-6">
-                <h3 className="text-lg font-medium mb-4">
+                <h3 className="mb-4 font-medium text-lg">
                   Daily Scoring Trend
                 </h3>
                 <DailyScorersChart
@@ -485,26 +477,26 @@ export default function Optimize() {
               </div>
             </div>
             <div className="lg:col-span-1">
-              <div className="rounded-lg border bg-card p-6 h-full">
-                <h3 className="text-lg font-medium mb-4">
+              <div className="h-full rounded-lg border bg-card p-6">
+                <h3 className="mb-4 font-medium text-lg">
                   Points Distribution
                 </h3>
                 <div className="h-[400px] w-full">
                   <ResponsiveContainer>
                     <PieChart>
                       <Pie
-                        data={positionDistributionData}
-                        dataKey="value"
-                        nameKey="position"
                         cx="50%"
                         cy="50%"
-                        outerRadius={150}
+                        data={positionDistributionData}
+                        dataKey="value"
                         label={({ position, value }) => value.toFixed(1)}
+                        nameKey="position"
+                        outerRadius={150}
                       >
                         {positionDistributionData.map((entry, index) => (
                           <Cell
-                            key={`cell-${index}`}
                             fill={COLORS[index % COLORS.length]}
+                            key={`cell-${index}`}
                           />
                         ))}
                       </Pie>
@@ -541,24 +533,19 @@ export default function Optimize() {
           </div>
 
           <div className="rounded-lg border bg-card p-6">
-            <h3 className="text-lg font-medium mb-4">Transfers</h3>
+            <h3 className="mb-4 font-medium text-lg">Transfers</h3>
             <TransferSummary
-              data={{
-                transfers_by_event: playerData.transfers_by_event,
-                transfer_summary: playerData.transfer_summary,
-              }}
+              data={playerData.transfers}
               events={metadata.events}
             />
           </div>
 
           <div className="rounded-lg border bg-card p-6">
-            <h3 className="text-lg font-medium mb-4">Selected Players</h3>
+            <h3 className="mb-4 font-medium text-lg">Selected Players</h3>
             <PlayerTable players={playerData.squad} />
           </div>
         </>
-      ) : (
-        <></>
-      )}
+      ) : null}
     </div>
-  )
+  );
 }

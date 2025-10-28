@@ -1,7 +1,6 @@
-import { useQuery } from '@tanstack/react-query'
 import ky from 'ky'
 
-import { IPick, ITransfer } from './myTeam'
+import type { IPick, ITransfer } from './myTeam'
 
 export enum Position {
   BACK_COURT = 1,
@@ -21,6 +20,7 @@ export interface IPlayer {
 }
 
 export interface IDailyStarter {
+  id: number
   name: string
   team: string
   points: number
@@ -28,32 +28,31 @@ export interface IDailyStarter {
 }
 
 export interface IDailyStarters {
-  [gameweekId: string | number]: IDailyStarter[]
+  [gameweekId: string | number]: {
+    score: number
+    starters: IDailyStarter[]
+  }
 }
 
 export interface IOptimizedTeam {
   squad: IPlayer[]
   daily_starters: IDailyStarters
-  points: {
-    adjusted_points: number
-    raw_points: number
-    transfer_penalty: number
+  transfers: {
+    by_event: Record<
+      string,
+      {
+        in: { phase: number; player: IPlayer }[]
+        out: { phase: number; player: IPlayer }[]
+      }
+    >
+    total: number
+    paid: number
+    cost: number
   }
+  true_gameweek_score: number
   total_cost: number
   average_points_per_day: number
   total_games: number
-  transfer_summary: {
-    total_transfers: number
-    penalties_by_phase: Record<
-      string,
-      { transfers: number; excess: number; penalty: number }
-    >
-    total_penalty: 0
-  }
-  transfers_by_event: Record<
-    string,
-    { count: number; in: IPlayer[]; out: IPlayer[] }
-  >
 }
 
 interface OptimizeParams {
@@ -66,19 +65,26 @@ interface OptimizeParams {
 }
 
 export const optimizeTeam = async (params: OptimizeParams) => {
-  const { gamedays, points_column, picks, transfers, force_include, force_exclude } = params
-  
+  const {
+    gamedays,
+    points_column,
+    picks,
+    transfers,
+    force_include,
+    force_exclude,
+  } = params
+
   const requestBody: any = { gamedays, picks, transfers }
-  
+
   // Only include force_include and force_exclude if they have values
   if (force_include && force_include.length > 0) {
     requestBody.force_include = force_include
   }
-  
+
   if (force_exclude && force_exclude.length > 0) {
     requestBody.force_exclude = force_exclude
   }
-  
+
   const parsed = await ky
     .post(`${process.env.NEXT_PUBLIC_API_BASE_URL}/optimize`, {
       credentials: 'include',
@@ -98,26 +104,34 @@ export const optimizeTeam = async (params: OptimizeParams) => {
   return parsed as IOptimizedTeam
 }
 
-const useOptimizeTeam = (
-  gamedays?: number[],
-  pointsColumn?: string,
-  picks?: IPick[],
-  transfers?: ITransfer,
-  forceInclude?: number[],
-  forceExclude?: number[],
-) => {
-  return useQuery({
-    queryKey: ['optimize', gamedays, pointsColumn, picks, transfers, forceInclude, forceExclude],
-    queryFn: () => optimizeTeam({
-      gamedays,
-      points_column: pointsColumn,
-      picks,
-      transfers,
-      force_include: forceInclude,
-      force_exclude: forceExclude,
-    }),
-    enabled: !!gamedays,
-  })
-}
+// const useOptimizeTeam = (
+//   gamedays?: number[],
+//   pointsColumn?: string,
+//   picks?: IPick[],
+//   transfers?: ITransfer,
+//   forceInclude?: number[],
+//   forceExclude?: number[]
+// ) =>
+//   useQuery({
+//     queryKey: [
+//       'optimize',
+//       gamedays,
+//       pointsColumn,
+//       picks,
+//       transfers,
+//       forceInclude,
+//       forceExclude,
+//     ],
+//     queryFn: () =>
+//       optimizeTeam({
+//         gamedays,
+//         points_column: pointsColumn,
+//         picks,
+//         transfers,
+//         force_include: forceInclude,
+//         force_exclude: forceExclude,
+//       }),
+//     enabled: !!gamedays,
+//   })
 
-export { useOptimizeTeam }
+// export { useOptimizeTeam }

@@ -1,12 +1,9 @@
+import { GoogleAnalytics } from '@next/third-parties/google'
 import type { Metadata } from 'next'
 import { Inter } from 'next/font/google'
 
-import { LanguageProvider } from '@inlang/paraglide-next'
-import { GoogleAnalytics } from '@next/third-parties/google'
-
 import Nav from '@/components/Nav'
 import { Toaster } from '@/components/ui/sonner'
-import { languageTag } from '@/paraglide/runtime.js'
 
 import './globals.css'
 import Providers from './providers'
@@ -16,7 +13,7 @@ const inter = Inter({ subsets: ['latin'] })
 export const metadata: Metadata = {
   title: {
     default: 'Fantasy NBA Planner | Optimize Your Fantasy Basketball Team',
-    template: '%s | Fantasy NBA Planner'
+    template: '%s | Fantasy NBA Planner',
   },
   description:
     'Advanced tools and visualizations for your NBA Fantasy Salary Cap Edition team. Optimize transfers, analyze player stats, and maximize your weekly points.',
@@ -47,7 +44,8 @@ export const metadata: Metadata = {
     url: 'https://fantasy-nba.vercel.app',
     siteName: 'Fantasy NBA Planner',
     title: 'Fantasy NBA Planner | Optimize Your Fantasy Basketball Team',
-    description: 'Advanced tools and visualizations for your NBA Fantasy Salary Cap Edition team. Optimize transfers, analyze player stats, and maximize your weekly points.',
+    description:
+      'Advanced tools and visualizations for your NBA Fantasy Salary Cap Edition team. Optimize transfers, analyze player stats, and maximize your weekly points.',
     images: [
       {
         url: 'https://fantasy-nba.vercel.app/og-image.jpg',
@@ -60,7 +58,8 @@ export const metadata: Metadata = {
   twitter: {
     card: 'summary_large_image',
     title: 'Fantasy NBA Planner | Optimize Your Fantasy Basketball Team',
-    description: 'Advanced tools and visualizations for your NBA Fantasy Salary Cap Edition team.',
+    description:
+      'Advanced tools and visualizations for your NBA Fantasy Salary Cap Edition team.',
     images: ['https://fantasy-nba.vercel.app/twitter-image.jpg'],
   },
   alternates: {
@@ -74,22 +73,20 @@ export default function RootLayout({
   children: React.ReactNode
 }) {
   return (
-    <LanguageProvider>
-      <html lang={languageTag()} suppressHydrationWarning>
-        <body className={inter.className}>
-          <Providers
-            attribute="class"
-            defaultTheme="light"
-            enableSystem
-            disableTransitionOnChange
-          >
-            <Nav />
-            <div className="container mx-auto p-8 max-sm:mb-12">{children}</div>
-            <Toaster />
-          </Providers>
-        </body>
-        <GoogleAnalytics gaId="G-0187RMBX59" />
-      </html>
-    </LanguageProvider>
+    <html lang="en" suppressHydrationWarning>
+      <body className={inter.className}>
+        <Providers
+          attribute="class"
+          defaultTheme="light"
+          disableTransitionOnChange
+          enableSystem
+        >
+          <Nav />
+          <div className="container mx-auto p-8 max-sm:mb-12">{children}</div>
+          <Toaster />
+        </Providers>
+      </body>
+      <GoogleAnalytics gaId="G-0187RMBX59" />
+    </html>
   )
 }

@@ -1,59 +1,60 @@
-import { IEvent, IOptimizedTeam } from '@/hooks/api'
+import type { IEvent, IOptimizedTeam } from '@/hooks/api'
 
 export function TransferSummary({
   data,
   events,
 }: {
-  data: Pick<IOptimizedTeam, 'transfers_by_event' | 'transfer_summary'>
+  data: IOptimizedTeam['transfers']
   events: IEvent[]
 }) {
-  const eventIds = Object.keys(data.transfers_by_event).sort(
-    (a, b) => parseInt(a) - parseInt(b),
+  const eventIds = Object.keys(data.by_event).sort(
+    (a, b) => Number.parseInt(a, 10) - Number.parseInt(b, 10)
   )
 
   return (
     <div className="space-y-6">
       <div className="flex flex-wrap gap-4">
-        <div className="rounded-lg border bg-card p-4 flex-1">
-          <h4 className="text-sm font-medium mb-2">Total Transfers</h4>
-          <p className="text-2xl font-bold">
-            {data.transfer_summary.total_transfers}
-          </p>
+        <div className="flex-1 rounded-lg border bg-card p-4">
+          <h4 className="mb-2 font-medium text-sm">Total Transfers</h4>
+          <p className="font-bold text-2xl">{data.total}</p>
         </div>
-        <div className="rounded-lg border bg-card p-4 flex-1">
-          <h4 className="text-sm font-medium mb-2">Total Penalty</h4>
-          <p className="text-2xl font-bold text-destructive">
-            {(data.transfer_summary.total_penalty / 10).toLocaleString()}
+        <div className="flex-1 rounded-lg border bg-card p-4">
+          <h4 className="mb-2 font-medium text-sm">Total Penalty</h4>
+          <p className="font-bold text-2xl text-destructive">
+            {(data.cost / 10).toLocaleString()}
           </p>
         </div>
       </div>
 
       <div className="space-y-4">
         {eventIds.map((eventId) => {
-          const transfers = data.transfers_by_event[eventId]
-          if (transfers.count === 0) return null
+          const transfers = data.by_event[eventId]
+          if (transfers.in.length === 0) {
+            return null
+          }
 
           return (
-            <div key={eventId} className="rounded-lg border bg-card p-4">
-              <div className="flex items-center justify-between mb-4">
+            <div className="rounded-lg border bg-card p-4" key={eventId}>
+              <div className="mb-4 flex items-center justify-between">
                 <h4 className="font-medium">
                   {
                     events.find((event) => event.id.toString() === eventId)
                       ?.name
                   }
                 </h4>
-                <span className="text-sm text-muted-foreground">
-                  {transfers.count} transfer{transfers.count > 1 ? 's' : ''}
+                <span className="text-muted-foreground text-sm">
+                  {transfers.in.length} transfer
+                  {transfers.in.length > 1 ? 's' : ''}
                 </span>
               </div>
               {transfers.in.length > 0 && (
-                <div className="space-y-2 mb-4">
-                  <h5 className="text-sm font-medium text-chart-2">In</h5>
+                <div className="mb-4 space-y-2">
+                  <h5 className="font-medium text-chart-2 text-sm">In</h5>
                   <div className="space-y-1">
-                    {transfers.in.map((player) => (
+                    {transfers.in.map(({ phase, player }) => (
                       <div
-                        key={player.id}
                         className="flex items-center justify-between text-sm"
+                        key={player.id}
                       >
                         <span>
                           {player.name} ({player.team_short})
@@ -68,12 +69,12 @@ export function TransferSummary({
               )}
               {transfers.out.length > 0 && (
                 <div className="space-y-2">
-                  <h5 className="text-sm font-medium text-destructive">Out</h5>
+                  <h5 className="font-medium text-destructive text-sm">Out</h5>
                   <div className="space-y-1">
-                    {transfers.out.map((player) => (
+                    {transfers.out.map(({ phase, player }) => (
                       <div
-                        key={player.id}
                         className="flex items-center justify-between text-sm"
+                        key={player.id}
                       >
                         <span>
                           {player.name} ({player.team_short})

@@ -1,10 +1,9 @@
 'use client'
 
-import React, { useEffect, useState } from 'react'
+import { useMutation, useQueryClient } from '@tanstack/react-query'
 
 import { ThumbsUp } from 'lucide-react'
 import { toast } from 'sonner'
-
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import {
@@ -15,65 +14,64 @@ import {
   CardTitle,
 } from '@/components/ui/card'
 import { Skeleton } from '@/components/ui/skeleton'
+import { type FeaturesResponse, useFeatures } from '@/hooks/api/features'
 
 import { recordVote } from './actions'
 
-type Feature = {
-  id: number
-  title: string
-  description: string
-  votes: number
-  status: string
-}
-
 export default function FeatureVotingPage() {
-  const [features, setFeatures] = useState<Feature[]>([])
-  const [votedFeatures, setVotedFeatures] = useState<number[]>([])
-  const [loading, setLoading] = useState(true)
+  const { data, isLoading } = useFeatures()
+  const queryClient = useQueryClient()
 
-  useEffect(() => {
-    fetchFeatures()
-  }, [])
+  const voteMutation = useMutation({
+    mutationFn: recordVote,
+    onMutate: async (featureId: number) => {
+      // Cancel outgoing refetches
+      await queryClient.cancelQueries({ queryKey: ['features'] })
 
-  const fetchFeatures = async () => {
-    try {
-      const response = await fetch('/api/features')
-      const data = await response.json()
+      // Snapshot previous value
+      const previousData = queryClient.getQueryData<FeaturesResponse>([
+        'features',
+      ])
 
-      if (!response.ok) throw new Error(data.error)
+      // Optimistically update
+      queryClient.setQueryData<FeaturesResponse>(['features'], (old) => {
+        if (!old) {
+          return old
+        }
+        return {
+          features: old.features.map((feature) =>
+            feature.id === featureId
+              ? { ...feature, votes: feature.votes + 1 }
+              : feature
+          ),
+          votedFeatures: [...old.votedFeatures, featureId],
+        }
+      })
 
-      setFeatures(data.features)
-      setVotedFeatures(data.votedFeatures)
-    } catch (error) {
-      toast.error('Failed to load features')
-    } finally {
-      setLoading(false)
-    }
-  }
-
-  const handleVote = async (featureId: number) => {
-    try {
-      const result = await recordVote(featureId)
-
+      return { previousData }
+    },
+    onError: (error, featureId, context) => {
+      // Rollback on error
+      if (context?.previousData) {
+        queryClient.setQueryData(['features'], context.previousData)
+      }
+      toast.error('Failed to record vote')
+    },
+    onSuccess: (result) => {
       if (!result.success) {
         toast.error(result.error || 'Failed to record vote')
         return
       }
-
-      // Optimistically update UI
-      setFeatures(
-        features.map((feature) =>
-          feature.id === featureId
-            ? { ...feature, votes: feature.votes + 1 }
-            : feature,
-        ),
-      )
-      setVotedFeatures([...votedFeatures, featureId])
-
       toast.success('Vote recorded successfully!')
-    } catch (error) {
-      toast.error('Failed to record vote')
-    }
+    },
+    onSettled: () => {
+      // Refetch to ensure sync with server
+      queryClient.invalidateQueries({ queryKey: ['features'] })
+    },
+  })
+
+  const handleVote = (featureId: number) => {
+    voteMutation.mutate(featureId)
   }
 
   const getStatusColor = (status: string) => {
@@ -96,22 +94,22 @@ export default function FeatureVotingPage() {
   return (
     <div className="space-y-6 md:space-y-8">
       <div className="space-y-2">
-        <h2 className="scroll-m-20 text-3xl font-semibold tracking-tight transition-colors first:mt-0">
+        <h2 className="scroll-m-20 font-semibold text-3xl tracking-tight transition-colors first:mt-0">
           Upcoming Features
         </h2>
-        <p className="text-xl text-muted-foreground">
+        <p className="text-muted-foreground text-xl">
           A list of upcoming features that you can upvote. No provision to
           submit new features yet, but I&apos;m planning to add it as one
           possible feature ( • ᴗ - )
         </p>
       </div>
       <div className="space-y-4">
-        {loading
+        {isLoading
           ? Array.from({ length: 3 }).map((_, i) => (
               <Card key={i}>
                 <CardHeader>
-                  <div className="flex flex-col sm:flex-row sm:items-center gap-4">
-                    <div className="space-y-3 flex-1">
+                  <div className="flex flex-col gap-4 sm:flex-row sm:items-center">
+                    <div className="flex-1 space-y-3">
                       <Skeleton className="h-6 w-[250px] max-w-full" />
                       <Skeleton className="h-4 w-[350px] max-w-full" />
                     </div>
@@ -123,10 +121,10 @@ export default function FeatureVotingPage() {
                 </CardContent>
               </Card>
             ))
-          : features.map((feature) => (
-              <Card key={feature.id} className="overflow-hidden">
+          : data?.features.map((feature) => (
+              <Card className="overflow-hidden" key={feature.id}>
                 <CardHeader>
-                  <div className="flex flex-col sm:flex-row sm:items-center gap-4">
+                  <div className="flex flex-col gap-4 sm:flex-row sm:items-center">
                     <div className="flex-1 space-y-2">
                       <CardTitle className="text-xl">{feature.title}</CardTitle>
                       <CardDescription className="text-sm sm:text-base">
@@ -134,18 +132,18 @@ export default function FeatureVotingPage() {
                       </CardDescription>
                     </div>
                     <Button
+                      className="hidden min-w-[100px] sm:inline-flex sm:self-center"
+                      disabled={data.votedFeatures.includes(feature.id)}
                       onClick={() => handleVote(feature.id)}
                       variant={
-                        votedFeatures.includes(feature.id)
+                        data.votedFeatures.includes(feature.id)
                           ? 'secondary'
                           : 'outline'
                       }
-                      className="min-w-[100px] hidden sm:inline-flex sm:self-center"
-                      disabled={votedFeatures.includes(feature.id)}
                     >
                       <ThumbsUp
                         className={`mr-2 h-4 w-4 ${
-                          votedFeatures.includes(feature.id)
+                          data.votedFeatures.includes(feature.id)
                             ? 'fill-current'
                             : ''
                         }`}
@@ -160,18 +158,20 @@ export default function FeatureVotingPage() {
                       feature.status.slice(1)}
                   </Badge>
                   <Button
+                    className="min-w-[100px] self-center md:hidden"
+                    disabled={data.votedFeatures.includes(feature.id)}
                     onClick={() => handleVote(feature.id)}
                     variant={
-                      votedFeatures.includes(feature.id)
+                      data.votedFeatures.includes(feature.id)
                         ? 'secondary'
                         : 'outline'
                     }
-                    className="min-w-[100px] self-center md:hidden"
-                    disabled={votedFeatures.includes(feature.id)}
                   >
                     <ThumbsUp
                       className={`mr-2 h-4 w-4 ${
-                        votedFeatures.includes(feature.id) ? 'fill-current' : ''
+                        data.votedFeatures.includes(feature.id)
+                          ? 'fill-current'
+                          : ''
                       }`}
                     />
                     {feature.votes}

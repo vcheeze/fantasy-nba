@@ -9,7 +9,7 @@ import {
   YAxis,
 } from 'recharts'
 
-import { IDailyStarters, IEvent, Position } from '@/hooks/api'
+import { type IDailyStarters, type IEvent, Position } from '@/hooks/api'
 
 interface DailyScorersChartProps {
   data: IDailyStarters
@@ -17,10 +17,10 @@ interface DailyScorersChartProps {
 }
 
 export function DailyScorersChart({ data, events }: DailyScorersChartProps) {
-  const chartData = Object.entries(data).map(([gameday, scorers]) => ({
+  const chartData = Object.entries(data).map(([gameday, details]) => ({
     gameday: events.find((event) => event.id.toString() === gameday)?.name,
-    points: scorers.reduce((acc, scorer) => acc + scorer.points, 0),
-    players: scorers,
+    points: details.starters.reduce((acc, scorer) => acc + scorer.points, 0),
+    players: details.starters,
   }))
 
   const CustomTooltip = ({ active, payload, label }: any) => {
@@ -28,15 +28,15 @@ export function DailyScorersChart({ data, events }: DailyScorersChartProps) {
       const players = payload[0].payload.players
       return (
         <div className="rounded-lg border bg-background p-4 shadow-lg">
-          <p className="font-medium mb-2">{label}</p>
-          <p className="text-sm text-muted-foreground mb-2">
+          <p className="mb-2 font-medium">{label}</p>
+          <p className="mb-2 text-muted-foreground text-sm">
             Total Points: {(payload[0].value / 10).toFixed(1)}
           </p>
           <div className="space-y-1">
             {players.map((player: any) => (
               <div
+                className="flex justify-between gap-4 text-sm"
                 key={player.name}
-                className="text-sm flex justify-between gap-4"
               >
                 <span className="font-medium">{player.name}</span>
                 <span className="text-muted-foreground">
@@ -54,28 +54,28 @@ export function DailyScorersChart({ data, events }: DailyScorersChartProps) {
 
   return (
     <div className="h-[400px] w-full animate-fade-in">
-      <ResponsiveContainer width="100%" height="100%">
+      <ResponsiveContainer height="100%" width="100%">
         <BarChart data={chartData}>
           <XAxis
-            dataKey="gameday"
-            stroke="#888888"
-            fontSize={12}
-            tickLine={false}
             axisLine={false}
+            dataKey="gameday"
+            fontSize={12}
+            stroke="#888888"
+            tickLine={false}
           />
           <YAxis
-            stroke="#888888"
-            fontSize={12}
-            tickLine={false}
             axisLine={false}
+            fontSize={12}
+            stroke="#888888"
             tickFormatter={(value) => `${value}`}
+            tickLine={false}
           />
           <Tooltip content={<CustomTooltip />} />
           <Bar
+            className="fill-primary"
             dataKey="points"
             fill="currentColor"
             radius={[4, 4, 0, 0]}
-            className="fill-primary"
           />
         </BarChart>
       </ResponsiveContainer>
