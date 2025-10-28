@@ -65,7 +65,7 @@ export default function Nav() {
     <div className="fixed bottom-0 z-50 flex w-full items-center justify-between bg-muted p-4">
       {ROUTES.map((route) => (
         <Button key={route.name} variant="link">
-          <NextLink href={route.link}>{route.icon}</NextLink>
+          <Link href={route.link}>{route.icon}</Link>
         </Button>
       ))}
       <div>
