@@ -40,14 +40,40 @@ export interface IOptimizedTeam {
   transfers: {
     by_event: Record<
       string,
-      {
-        in: { phase: number; player: IPlayer }[]
-        out: { phase: number; player: IPlayer }[]
-      }
+      Array<{
+        phase: number
+        transfer_number: number
+        is_paid: boolean
+        penalty: number
+        points_gained: number
+        points_lost: number
+        net_points: number
+        games_gained: number
+        games_lost: number
+        in: {
+          id: number
+          name: string
+          team: string
+          team_short: string
+          position: number
+          points: number
+          cost: number
+        }
+        out: {
+          id: number
+          name: string
+          team: string
+          team_short: string
+          position: number
+          points: number
+          cost: number
+        }
+      }>
     >
     total: number
     paid: number
     cost: number
+    total_net_points: number
   }
   true_gameweek_score: number
   total_cost: number

@@ -1,19 +1,17 @@
 'use client'
 
-import { useState, useEffect } from 'react'
-import { useMetadata, IElement, ITeam } from '@/hooks/api'
-import { 
-  Select, 
-  SelectContent, 
-  SelectItem, 
-  SelectTrigger, 
-  SelectValue 
-} from '@/components/ui/select'
+import { MagnifyingGlassIcon } from '@phosphor-icons/react'
+import { useEffect, useState } from 'react'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
-import { Button } from '@/components/ui/button'
-import { Search } from 'lucide-react'
-import Image from 'next/image'
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select'
+import { type IElement, useMetadata } from '@/hooks/api'
 
 interface PlayerSelectionProps {
   onPlayerSelect?: (player: IElement) => void
@@ -50,13 +48,13 @@ const teamAbbreviations: Record<string, string> = {
   'San Antonio Spurs': 'SAS',
   'Toronto Raptors': 'TOR',
   'Utah Jazz': 'UTA',
-  'Washington Wizards': 'WAS'
+  'Washington Wizards': 'WAS',
 }
 
 // Position mapping
 const positionMapping: Record<number, string> = {
   1: 'FRONT COURT',
-  2: 'BACK COURT'
+  2: 'BACK COURT',
 }
 
 export function PlayerSelection({ onPlayerSelect }: PlayerSelectionProps) {
@@ -71,7 +69,9 @@ export function PlayerSelection({ onPlayerSelect }: PlayerSelectionProps) {
   useEffect(() => {
     if (metadata?.elements && metadata.elements.length > 0) {
       // Find the highest cost player
-      const highestCost = Math.max(...metadata.elements.map(player => player.element_type))
+      const highestCost = Math.max(
+        ...metadata.elements.map((player) => player.element_type)
+      )
       setMaxCost(highestCost)
     }
   }, [metadata?.elements])
@@ -86,8 +86,8 @@ export function PlayerSelection({ onPlayerSelect }: PlayerSelectionProps) {
     if (searchTerm) {
       const term = searchTerm.toLowerCase()
       players = players.filter(
-        player => 
-          player.first_name.toLowerCase().includes(term) || 
+        (player) =>
+          player.first_name.toLowerCase().includes(term) ||
           player.second_name.toLowerCase().includes(term)
       )
     }
@@ -97,15 +97,17 @@ export function PlayerSelection({ onPlayerSelect }: PlayerSelectionProps) {
       const positionId = Object.entries(positionMapping).find(
         ([_, value]) => value === viewFilter
       )?.[0]
-      
+
       if (positionId) {
-        players = players.filter(player => player.element_type === parseInt(positionId))
+        players = players.filter(
+          (player) => player.element_type === Number.parseInt(positionId)
+        )
       }
     }
 
     // Apply max cost filter
     if (maxCost) {
-      players = players.filter(player => player.element_type <= maxCost)
+      players = players.filter((player) => player.element_type <= maxCost)
     }
 
     // Apply sorting
@@ -124,7 +126,7 @@ export function PlayerSelection({ onPlayerSelect }: PlayerSelectionProps) {
 
   // Get team name by team id
   const getTeamName = (teamId: number): string => {
-    const team = metadata?.teams.find(t => t.id === teamId)
+    const team = metadata?.teams.find((t) => t.id === teamId)
     return team ? team.name : ''
   }
 
@@ -135,14 +137,11 @@ export function PlayerSelection({ onPlayerSelect }: PlayerSelectionProps) {
   }
 
   // Get position name
-  const getPositionName = (positionId: number): string => {
-    return positionMapping[positionId] || 'Unknown'
-  }
+  const getPositionName = (positionId: number): string =>
+    positionMapping[positionId] || 'Unknown'
 
   // Format player cost for display
-  const formatCost = (cost: number): string => {
-    return cost.toFixed(1)
-  }
+  const formatCost = (cost: number): string => cost.toFixed(1)
 
   if (isLoading) {
     return <div>Loading player data...</div>
@@ -150,16 +149,16 @@ export function PlayerSelection({ onPlayerSelect }: PlayerSelectionProps) {
 
   return (
     <div className="rounded-lg border bg-card shadow-sm">
-      <div className="bg-primary text-primary-foreground p-3 rounded-t-lg">
-        <h3 className="text-lg font-semibold">Player Selection</h3>
+      <div className="rounded-t-lg bg-primary p-3 text-primary-foreground">
+        <h3 className="font-semibold text-lg">Player Selection</h3>
       </div>
-      
-      <div className="p-4 space-y-4">
+
+      <div className="space-y-4 p-4">
         {/* View Filter */}
         <div>
           <Label htmlFor="view">View</Label>
-          <Select value={viewFilter} onValueChange={setViewFilter}>
-            <SelectTrigger className="w-full border-yellow-500 border-b-2 rounded-none">
+          <Select onValueChange={setViewFilter} value={viewFilter}>
+            <SelectTrigger className="w-full rounded-none border-yellow-500 border-b-2">
               <SelectValue placeholder="All players" />
             </SelectTrigger>
             <SelectContent>
@@ -169,12 +168,12 @@ export function PlayerSelection({ onPlayerSelect }: PlayerSelectionProps) {
             </SelectContent>
           </Select>
         </div>
-        
+
         {/* Sort By */}
         <div>
           <Label htmlFor="sortBy">Sorted by</Label>
-          <Select value={sortBy} onValueChange={setSortBy}>
-            <SelectTrigger className="w-full border-yellow-500 border-b-2 rounded-none">
+          <Select onValueChange={setSortBy} value={sortBy}>
+            <SelectTrigger className="w-full rounded-none border-yellow-500 border-b-2">
               <SelectValue placeholder="Salary" />
             </SelectTrigger>
             <SelectContent>
@@ -183,36 +182,38 @@ export function PlayerSelection({ onPlayerSelect }: PlayerSelectionProps) {
             </SelectContent>
           </Select>
         </div>
-        
+
         {/* Search */}
         <div>
           <Label htmlFor="search">Search player list</Label>
           <div className="relative">
             <Input
+              className="w-full rounded-none border-yellow-500 border-b-2 pl-10"
               id="search"
-              value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
-              className="w-full pl-10 border-yellow-500 border-b-2 rounded-none"
               placeholder="Search players..."
+              value={searchTerm}
             />
-            <div className="absolute left-3 top-1/2 transform -translate-y-1/2 text-yellow-500">
-              <Search size={18} />
+            <div className="-translate-y-1/2 absolute top-1/2 left-3 transform text-yellow-500">
+              <MagnifyingGlassIcon size={18} />
             </div>
           </div>
         </div>
-        
+
         {/* Max Cost */}
         <div>
           <Label htmlFor="maxCost">Max cost</Label>
-          <Select 
-            value={maxCost?.toString() || ''} 
-            onValueChange={(value) => setMaxCost(value ? parseFloat(value) : undefined)}
+          <Select
+            onValueChange={(value) =>
+              setMaxCost(value ? Number.parseFloat(value) : undefined)
+            }
+            value={maxCost?.toString() || ''}
           >
-            <SelectTrigger className="w-full border-yellow-500 border-b-2 rounded-none">
+            <SelectTrigger className="w-full rounded-none border-yellow-500 border-b-2">
               <SelectValue placeholder="Max cost" />
             </SelectTrigger>
             <SelectContent>
-              {Array.from({ length: 10 }, (_, i) => 22 - i).map(cost => (
+              {Array.from({ length: 10 }, (_, i) => 22 - i).map((cost) => (
                 <SelectItem key={cost} value={cost.toString()}>
                   {cost.toFixed(1)}
                 </SelectItem>
@@ -220,42 +221,46 @@ export function PlayerSelection({ onPlayerSelect }: PlayerSelectionProps) {
             </SelectContent>
           </Select>
         </div>
-        
-        <div className="text-sm text-center text-muted-foreground">
+
+        <div className="text-center text-muted-foreground text-sm">
           {filteredPlayers.length} players shown
         </div>
       </div>
-      
+
       {/* Player List */}
       <div className="border-t">
         {/* Header */}
-        <div className="grid grid-cols-[1fr_auto_auto] bg-red-600 text-white font-bold">
+        <div className="grid grid-cols-[1fr_auto_auto] bg-red-600 font-bold text-white">
           <div className="p-2">FRONT COURT</div>
-          <div className="p-2 border-l border-white">$</div>
-          <div className="p-2 border-l border-white">**</div>
+          <div className="border-white border-l p-2">$</div>
+          <div className="border-white border-l p-2">**</div>
         </div>
-        
+
         {/* Player Rows */}
         <div className="divide-y">
           {filteredPlayers
-            .filter(player => player.element_type === 1) // Front Court
+            .filter((player) => player.element_type === 1) // Front Court
             .slice(0, 10) // Limit to 10 players for performance
-            .map(player => (
-              <div 
-                key={player.id} 
-                className="grid grid-cols-[auto_1fr_auto_auto] items-center p-2 hover:bg-gray-100 cursor-pointer"
+            .map((player) => (
+              <div
+                className="grid cursor-pointer grid-cols-[auto_1fr_auto_auto] items-center p-2 hover:bg-gray-100"
+                key={player.id}
                 onClick={() => onPlayerSelect && onPlayerSelect(player)}
               >
                 <div className="mr-2">
-                  <div className="w-8 h-8 rounded-full bg-gray-200 flex items-center justify-center text-xs">
+                  <div className="flex h-8 w-8 items-center justify-center rounded-full bg-gray-200 text-xs">
                     i
                   </div>
                 </div>
                 <div>
-                  <div className="font-semibold">{player.first_name} {player.second_name}</div>
+                  <div className="font-semibold">
+                    {player.first_name} {player.second_name}
+                  </div>
                   <div className="flex items-center text-sm">
-                    <span className="text-gray-500 mr-1">{getTeamAbbreviation(player.team)}</span>
-                    <span className="text-red-600 font-medium">FC</span>
+                    <span className="mr-1 text-gray-500">
+                      {getTeamAbbreviation(player.team)}
+                    </span>
+                    <span className="font-medium text-red-600">FC</span>
                   </div>
                 </div>
                 <div className="px-4">{formatCost(player.element_type)}</div>
@@ -263,35 +268,39 @@ export function PlayerSelection({ onPlayerSelect }: PlayerSelectionProps) {
               </div>
             ))}
         </div>
-        
+
         {/* Back Court Header */}
-        <div className="grid grid-cols-[1fr_auto_auto] bg-red-600 text-white font-bold mt-4">
+        <div className="mt-4 grid grid-cols-[1fr_auto_auto] bg-red-600 font-bold text-white">
           <div className="p-2">BACK COURT</div>
-          <div className="p-2 border-l border-white">$</div>
-          <div className="p-2 border-l border-white">**</div>
+          <div className="border-white border-l p-2">$</div>
+          <div className="border-white border-l p-2">**</div>
         </div>
-        
+
         {/* Back Court Player Rows */}
         <div className="divide-y">
           {filteredPlayers
-            .filter(player => player.element_type === 2) // Back Court
+            .filter((player) => player.element_type === 2) // Back Court
             .slice(0, 10) // Limit to 10 players for performance
-            .map(player => (
-              <div 
-                key={player.id} 
-                className="grid grid-cols-[auto_1fr_auto_auto] items-center p-2 hover:bg-gray-100 cursor-pointer"
+            .map((player) => (
+              <div
+                className="grid cursor-pointer grid-cols-[auto_1fr_auto_auto] items-center p-2 hover:bg-gray-100"
+                key={player.id}
                 onClick={() => onPlayerSelect && onPlayerSelect(player)}
               >
                 <div className="mr-2">
-                  <div className="w-8 h-8 rounded-full bg-gray-200 flex items-center justify-center text-xs">
+                  <div className="flex h-8 w-8 items-center justify-center rounded-full bg-gray-200 text-xs">
                     i
                   </div>
                 </div>
                 <div>
-                  <div className="font-semibold">{player.first_name} {player.second_name}</div>
+                  <div className="font-semibold">
+                    {player.first_name} {player.second_name}
+                  </div>
                   <div className="flex items-center text-sm">
-                    <span className="text-gray-500 mr-1">{getTeamAbbreviation(player.team)}</span>
-                    <span className="text-green-600 font-medium">BC</span>
+                    <span className="mr-1 text-gray-500">
+                      {getTeamAbbreviation(player.team)}
+                    </span>
+                    <span className="font-medium text-green-600">BC</span>
                   </div>
                 </div>
                 <div className="px-4">{formatCost(player.element_type)}</div>

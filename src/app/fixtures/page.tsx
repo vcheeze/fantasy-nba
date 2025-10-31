@@ -5,11 +5,7 @@ import { useEffect, useState } from 'react'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Checkbox } from '@/components/ui/checkbox'
-import {
-  Collapsible,
-  CollapsibleContent,
-  CollapsibleTrigger,
-} from '@/components/ui/collapsible'
+import { Collapsible, CollapsibleContent } from '@/components/ui/collapsible'
 import { Input } from '@/components/ui/input'
 import {
   Select,
@@ -27,7 +23,13 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table'
-import { IEvent, IFixtures, ITeam, useFixtures, useMetadata } from '@/hooks/api'
+import {
+  type IEvent,
+  type IFixtures,
+  type ITeam,
+  useFixtures,
+  useMetadata,
+} from '@/hooks/api'
 import { cn } from '@/lib/utils'
 
 interface TeamStats {
@@ -38,68 +40,66 @@ interface TeamStats {
   fixtureAppearances: { [key: number]: 'H' | 'A' | null }
 }
 
-const SkeletonTable = () => {
-  return (
-    <Card className="w-full">
-      <CardHeader>
-        <CardTitle>Team Fixture Analysis</CardTitle>
-      </CardHeader>
-      <CardContent>
-        <div className="overflow-x-auto">
-          <Table>
-            <TableHeader>
-              <TableRow className="bg-muted">
-                <TableHead className="text-left">
-                  <Skeleton className="h-4 w-20" />
+const SkeletonTable = () => (
+  <Card className="w-full">
+    <CardHeader>
+      <CardTitle>Team Fixture Analysis</CardTitle>
+    </CardHeader>
+    <CardContent>
+      <div className="overflow-x-auto">
+        <Table>
+          <TableHeader>
+            <TableRow className="bg-muted">
+              <TableHead className="text-left">
+                <Skeleton className="h-4 w-20" />
+              </TableHead>
+              {Array.from({ length: 6 }).map((_, i) => (
+                <TableHead className="text-center" key={i}>
+                  <Skeleton className="mx-auto h-4 w-12" />
                 </TableHead>
-                {Array.from({ length: 6 }).map((_, i) => (
-                  <TableHead key={i} className="text-center">
-                    <Skeleton className="h-4 w-12 mx-auto" />
-                  </TableHead>
-                ))}
-                <TableHead className="text-center">
-                  <Skeleton className="h-4 w-16 mx-auto" />
-                </TableHead>
-                <TableHead className="text-center">
-                  <Skeleton className="h-4 w-16 mx-auto" />
-                </TableHead>
-                <TableHead className="text-center">
-                  <Skeleton className="h-4 w-16 mx-auto" />
-                </TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {Array.from({ length: 8 }).map((_, index) => (
-                <TableRow
-                  key={index}
-                  className={index % 2 === 0 ? 'bg-background' : 'bg-muted/25'}
-                >
-                  <TableCell>
-                    <Skeleton className="h-4 w-32" />
-                  </TableCell>
-                  {Array.from({ length: 6 }).map((_, i) => (
-                    <TableCell key={i} className="text-center">
-                      <Skeleton className="h-6 w-6 rounded-full mx-auto" />
-                    </TableCell>
-                  ))}
-                  <TableCell className="text-center">
-                    <Skeleton className="h-6 w-8 rounded-full mx-auto" />
-                  </TableCell>
-                  <TableCell className="text-center">
-                    <Skeleton className="h-4 w-6 mx-auto" />
-                  </TableCell>
-                  <TableCell className="text-center">
-                    <Skeleton className="h-4 w-6 mx-auto" />
-                  </TableCell>
-                </TableRow>
               ))}
-            </TableBody>
-          </Table>
-        </div>
-      </CardContent>
-    </Card>
-  )
-}
+              <TableHead className="text-center">
+                <Skeleton className="mx-auto h-4 w-16" />
+              </TableHead>
+              <TableHead className="text-center">
+                <Skeleton className="mx-auto h-4 w-16" />
+              </TableHead>
+              <TableHead className="text-center">
+                <Skeleton className="mx-auto h-4 w-16" />
+              </TableHead>
+            </TableRow>
+          </TableHeader>
+          <TableBody>
+            {Array.from({ length: 8 }).map((_, index) => (
+              <TableRow
+                className={index % 2 === 0 ? 'bg-background' : 'bg-muted/25'}
+                key={index}
+              >
+                <TableCell>
+                  <Skeleton className="h-4 w-32" />
+                </TableCell>
+                {Array.from({ length: 6 }).map((_, i) => (
+                  <TableCell className="text-center" key={i}>
+                    <Skeleton className="mx-auto h-6 w-6 rounded-full" />
+                  </TableCell>
+                ))}
+                <TableCell className="text-center">
+                  <Skeleton className="mx-auto h-6 w-8 rounded-full" />
+                </TableCell>
+                <TableCell className="text-center">
+                  <Skeleton className="mx-auto h-4 w-6" />
+                </TableCell>
+                <TableCell className="text-center">
+                  <Skeleton className="mx-auto h-4 w-6" />
+                </TableCell>
+              </TableRow>
+            ))}
+          </TableBody>
+        </Table>
+      </div>
+    </CardContent>
+  </Card>
+)
 
 const FixtureAnalysisTable = ({
   fixtures,
@@ -117,7 +117,7 @@ const FixtureAnalysisTable = ({
   const processFixtures = () => {
     // Get unique events sorted
     const gamedays = Array.from(new Set(fixtures.map((f) => f.event))).sort(
-      (a, b) => a - b,
+      (a, b) => a - b
     )
 
     // Process team statistics and fixture appearances
@@ -138,11 +138,11 @@ const FixtureAnalysisTable = ({
                   ...acc,
                   [event]: null,
                 }),
-                {},
+                {}
               ),
             })
           }
-        },
+        }
       )
     })
 
@@ -162,7 +162,7 @@ const FixtureAnalysisTable = ({
 
     // Sort teams by total appearances
     const sortedTeams = Array.from(teamStatsMap.values()).sort(
-      (a, b) => b.appearances - a.appearances || a.team.localeCompare(b.team),
+      (a, b) => b.appearances - a.appearances || a.team.localeCompare(b.team)
     )
 
     return { gamedays, teamStats: sortedTeams }
@@ -193,7 +193,7 @@ const FixtureAnalysisTable = ({
 
   // Filter teamStats based on selection
   const filteredTeamStats = teamStats.filter((stats) =>
-    selectedTeams.length === 0 ? true : selectedTeams.includes(stats.team),
+    selectedTeams.length === 0 ? true : selectedTeams.includes(stats.team)
   )
 
   return (
@@ -202,67 +202,67 @@ const FixtureAnalysisTable = ({
         <div className="flex items-center justify-between">
           <CardTitle>Team Fixture Analysis</CardTitle>
           <Button
-            variant="outline"
-            size="sm"
             className="text-xs"
             onClick={() => setIsFilterOpen(!isFilterOpen)}
+            size="sm"
+            variant="outline"
           >
             {selectedTeams.length === 0
               ? 'All Teams'
               : `${selectedTeams.length} Team${selectedTeams.length === 1 ? '' : 's'} Selected`}
           </Button>
         </div>
-        <Collapsible open={isFilterOpen} onOpenChange={setIsFilterOpen}>
+        <Collapsible onOpenChange={setIsFilterOpen} open={isFilterOpen}>
           <CollapsibleContent className="mt-4 space-y-4">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2">
                 <Checkbox
-                  id="select-all"
                   checked={isAllSelected}
+                  id="select-all"
                   onCheckedChange={toggleAllTeams}
                 />
                 <label
+                  className="font-medium text-sm leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
                   htmlFor="select-all"
-                  className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
                 >
                   Select All Teams
                 </label>
               </div>
               <Input
-                type="search"
-                placeholder="Search teams..."
                 className="w-[200px]"
-                value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
+                placeholder="Search teams..."
+                type="search"
+                value={searchQuery}
               />
             </div>
-            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-2">
+            <div className="grid grid-cols-2 gap-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5">
               {teams
                 .slice() // Create a copy to avoid mutating the original array
                 .sort((a, b) => a.name.localeCompare(b.name))
                 .filter((team) =>
-                  team.name.toLowerCase().includes(searchQuery.toLowerCase()),
+                  team.name.toLowerCase().includes(searchQuery.toLowerCase())
                 )
                 .map((team) => (
                   <div
-                    key={team.id}
                     className={cn(
-                      'flex items-center gap-2 p-2 rounded-lg transition-colors',
+                      'flex items-center gap-2 rounded-lg p-2 transition-colors',
                       selectedTeams.includes(team.id.toString())
                         ? 'bg-primary/10'
-                        : 'hover:bg-muted/50',
+                        : 'hover:bg-muted/50'
                     )}
+                    key={team.id}
                     onClick={() => toggleTeam(team.id.toString())}
                     role="button"
                     tabIndex={0}
                   >
                     <Checkbox
-                      id={`team-${team.id}`}
                       checked={selectedTeams.includes(team.id.toString())}
+                      id={`team-${team.id}`}
                     />
                     <label
+                      className="cursor-pointer font-medium text-sm leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
                       htmlFor={`team-${team.id}`}
-                      className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70 cursor-pointer"
                     >
                       {team.name}
                     </label>
@@ -279,7 +279,7 @@ const FixtureAnalysisTable = ({
               <TableRow className="bg-muted">
                 <TableHead className="text-left">Team</TableHead>
                 {gamedays.map((event) => (
-                  <TableHead key={event} className="text-center">
+                  <TableHead className="text-center" key={event}>
                     {events
                       .find((evt) => evt.id === event)
                       ?.name.split(' - ')?.[1] ?? ''}
@@ -293,18 +293,19 @@ const FixtureAnalysisTable = ({
             <TableBody>
               {filteredTeamStats.map((stats, index) => (
                 <TableRow
-                  key={stats.team}
                   className={index % 2 === 0 ? 'bg-background' : 'bg-muted/25'}
+                  key={stats.team}
                 >
                   <TableCell className="font-medium">
-                    {teams.find((team) => team.id === parseInt(stats.team))
-                      ?.name ?? ''}
+                    {teams.find(
+                      (team) => team.id === Number.parseInt(stats.team)
+                    )?.name ?? ''}
                   </TableCell>
                   {gamedays.map((event) => (
-                    <TableCell key={event} className="text-center">
+                    <TableCell className="text-center" key={event}>
                       {stats.fixtureAppearances[event] && (
                         <span
-                          className={`inline-flex items-center justify-center w-6 h-6 rounded-full text-xs font-medium ${
+                          className={`inline-flex h-6 w-6 items-center justify-center rounded-full font-medium text-xs ${
                             stats.fixtureAppearances[event] === 'H'
                               ? 'bg-green-100 text-green-800 dark:bg-green-800 dark:text-green-100'
                               : 'bg-blue-100 text-blue-800 dark:bg-blue-800 dark:text-blue-100'
@@ -316,7 +317,7 @@ const FixtureAnalysisTable = ({
                     </TableCell>
                   ))}
                   <TableCell className="text-center">
-                    <span className="inline-flex items-center justify-center min-w-[2rem] px-2 py-1 bg-primary/10 rounded-full font-medium">
+                    <span className="inline-flex min-w-8 items-center justify-center rounded-full bg-primary/10 px-2 py-1 font-medium">
                       {stats.appearances}
                     </span>
                   </TableCell>
@@ -344,7 +345,7 @@ export default function Fixtures() {
         (phase) =>
           phase.id !== 1 &&
           currentEventId >= phase.start_event &&
-          currentEventId <= phase.stop_event,
+          currentEventId <= phase.stop_event
       )
     : undefined
   const [gameweek, setGameweek] = useState(currentPhase)
@@ -354,7 +355,7 @@ export default function Fixtures() {
     }
   }, [currentPhase])
   const { data: fixtures, isLoading: isFixturesLoading } = useFixtures(
-    gameweek?.id ?? currentPhase?.id,
+    gameweek?.id ?? currentPhase?.id
   )
 
   if (isLoading || isFixturesLoading) {
@@ -373,10 +374,10 @@ export default function Fixtures() {
   return (
     <div className="space-y-6 md:space-y-8">
       <div className="space-y-2">
-        <h2 className="scroll-m-20 text-3xl font-semibold tracking-tight transition-colors first:mt-0">
+        <h2 className="scroll-m-20 font-semibold text-3xl tracking-tight transition-colors first:mt-0">
           Fixtures Analyzer
         </h2>
-        <p className="text-xl text-muted-foreground">
+        <p className="text-muted-foreground text-xl">
           Analyzes fixtures by Gameweek, and orders the teams by the highest
           number of games played. This should help you figure out how to
           structure your team so you get the maximum number of games out of your
@@ -384,12 +385,12 @@ export default function Fixtures() {
         </p>
       </div>
       <Select
-        value={gameweek?.id.toString()}
         onValueChange={(value) =>
           setGameweek(
-            data?.phases.find((phase) => phase.id.toString() === value),
+            data?.phases.find((phase) => phase.id.toString() === value)
           )
         }
+        value={gameweek?.id.toString()}
       >
         <SelectTrigger className="w-[180px]">
           <SelectValue placeholder={currentPhase?.name} />
@@ -403,15 +404,15 @@ export default function Fixtures() {
         </SelectContent>
       </Select>
       <FixtureAnalysisTable
+        events={data?.events ?? []}
         fixtures={
           fixtures?.filter(
             (fixture) =>
               gameweek &&
               fixture.event >= gameweek.start_event &&
-              fixture.event <= gameweek.stop_event,
+              fixture.event <= gameweek.stop_event
           ) || []
         }
-        events={data?.events ?? []}
         teams={data?.teams ?? []}
       />
     </div>

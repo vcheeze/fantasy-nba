@@ -2,14 +2,7 @@
 
 import { useAtom } from 'jotai'
 import { useCallback, useEffect, useMemo, useState } from 'react'
-import {
-  Cell,
-  Legend,
-  Pie,
-  PieChart,
-  ResponsiveContainer,
-  Tooltip,
-} from 'recharts'
+import { Cell, Pie, PieChart } from 'recharts'
 
 import { DailyScorersChart } from '@/components/DailyScorersChart'
 import { PlayerTable } from '@/components/PlayerTable'
@@ -17,6 +10,14 @@ import { StatCard } from '@/components/StatCard'
 import { TextLoader } from '@/components/TextLoader'
 import { TransferSummary } from '@/components/TransferSummary'
 import { Button } from '@/components/ui/button'
+import {
+  type ChartConfig,
+  ChartContainer,
+  ChartLegend,
+  ChartLegendContent,
+  ChartTooltip,
+  ChartTooltipContent,
+} from '@/components/ui/chart'
 import { Field, FieldLabel } from '@/components/ui/field'
 import {
   Select,
@@ -51,7 +52,7 @@ export default function Optimize() {
 
   const { data: metadata } = useMetadata()
 
-  const { currentEventIndex, eventOptions } = useMemo(() => {
+  const { currentEventIndex, eventOptions, currentPhase } = useMemo(() => {
     // Early return if no metadata
     if (!(metadata?.events && metadata?.phases)) {
       return { currentEventIndex: -1, eventOptions: undefined }
@@ -74,6 +75,8 @@ export default function Optimize() {
         currentEvent.id >= phase.start_event &&
         currentEvent.id <= phase.stop_event
     )
+    const currentPhase =
+      currentPhaseIndex > -1 ? metadata.phases[currentPhaseIndex] : undefined
 
     // Determine slice end point
     let endIndex = metadata.events.length
@@ -90,7 +93,11 @@ export default function Optimize() {
 
     const options = metadata.events.slice(currentGamedayIndex, endIndex)
 
-    return { currentEventIndex: currentGamedayIndex, eventOptions: options }
+    return {
+      currentEventIndex: currentGamedayIndex,
+      eventOptions: options,
+      currentPhase,
+    }
   }, [metadata])
 
   useEffect(() => {
@@ -119,6 +126,7 @@ export default function Optimize() {
       {} as Record<string, { position: string; value: number; players: number }>
     ) ?? {}
   const positionDistributionData = Object.values(courtPositionData)
+  console.log('courtPositionData :>> ', courtPositionData)
 
   const COLORS = [
     'hsl(var(--chart-1))',
@@ -144,12 +152,29 @@ export default function Optimize() {
       (_, i) => i + startGameday
     )
 
-    // Prepare query parameters
-    const queryParams = {
+    // Prepare query parameters (start without transfers)
+    const queryParams: Record<string, unknown> = {
       gamedays,
       points_column: pointsColumn,
       picks: myTeam?.picks || [],
-      transfers: myTeam?.transfers,
+    }
+
+    // Only include transfers if the selected gamedays include the current phase
+    // (use `currentPhase` returned from useMemo to avoid re-scanning metadata)
+    const includeTransfers =
+      !!currentPhase &&
+      gamedays.some(
+        (g) =>
+          g >=
+            (currentPhase as { start_event: number; stop_event: number })
+              .start_event &&
+          g <=
+            (currentPhase as { start_event: number; stop_event: number })
+              .stop_event
+      )
+
+    if (includeTransfers && myTeam?.transfers) {
+      queryParams.transfers = myTeam.transfers
     }
 
     // Only include force_include if there are players to include
@@ -169,9 +194,7 @@ export default function Optimize() {
           gamedays,
           pointsColumn,
           myTeam?.picks,
-          myTeam?.transfers,
-          // includedPlayers.length > 0 ? includedPlayers : null,
-          // excludedPlayers.length > 0 ? excludedPlayers : null,
+          includeTransfers ? myTeam?.transfers : null,
         ],
         queryFn: () => optimizeTeam(queryParams),
       })
@@ -185,6 +208,7 @@ export default function Optimize() {
     stopGameday,
     pointsColumn,
     myTeam,
+    currentPhase,
     queryClient,
     // includedPlayers,
     // excludedPlayers,
@@ -482,14 +506,34 @@ export default function Optimize() {
                   Points Distribution
                 </h3>
                 <div className="h-[400px] w-full">
-                  <ResponsiveContainer>
+                  <ChartContainer
+                    className="min-h-[400px] w-full"
+                    config={
+                      {
+                        position: {
+                          label: 'Position',
+                        },
+                        value: {
+                          label: 'Number',
+                        },
+                      } satisfies ChartConfig
+                    }
+                  >
                     <PieChart>
+                      <ChartTooltip
+                        content={<ChartTooltipContent hideLabel />}
+                      />
+                      <ChartLegend
+                        content={<ChartLegendContent nameKey="value" />}
+                      />
                       <Pie
                         cx="50%"
                         cy="50%"
                         data={positionDistributionData}
                         dataKey="value"
-                        label={({ position, value }) => value.toFixed(1)}
+                        label={({ position, value }) =>
+                          `${value.toFixed(1)} pts`
+                        }
                         nameKey="position"
                         outerRadius={150}
                       >
@@ -500,12 +544,8 @@ export default function Optimize() {
                           />
                         ))}
                       </Pie>
-                      <Tooltip
-                        formatter={(value) => (value as number).toFixed(1)}
-                      />
-                      <Legend />
                     </PieChart>
-                  </ResponsiveContainer>
+                  </ChartContainer>
                 </div>
                 {/* <div className="space-y-4">
                   {Object.entries(

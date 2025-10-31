@@ -1,6 +1,13 @@
 'use client'
 
-import { ChartLine, Home, Map, Moon, Sun, Users } from 'lucide-react'
+import {
+  ChartLineIcon,
+  HouseSimpleIcon,
+  MapTrifoldIcon,
+  MoonIcon,
+  SunIcon,
+  UsersIcon,
+} from '@phosphor-icons/react'
 import Link from 'next/link'
 import { useTheme } from 'next-themes'
 import { Button } from '@/components/ui/button'
@@ -13,7 +20,7 @@ export default function Nav() {
     {
       name: 'Home',
       link: '/',
-      icon: <Home />,
+      icon: <HouseSimpleIcon />,
     },
     // {
     //   name: 'Planner',
@@ -22,17 +29,17 @@ export default function Nav() {
     {
       name: 'Fixtures Analyzer',
       link: '/fixtures',
-      icon: <ChartLine />,
+      icon: <ChartLineIcon />,
     },
     {
       name: 'Optimal Team',
       link: '/optimize',
-      icon: <Users />,
+      icon: <UsersIcon />,
     },
     {
       name: 'Roadmap',
       link: '/features',
-      icon: <Map />,
+      icon: <MapTrifoldIcon />,
     },
   ]
 
@@ -40,11 +47,15 @@ export default function Nav() {
 
   if (isDesktop) {
     return (
-      <div className="flex w-full items-center justify-between p-4">
+      <div className="container mx-auto flex w-full items-center justify-between p-8">
         <h1>Fantasy NBA Planner</h1>
         <div className="flex md:gap-2">
           {ROUTES.map((route) => (
-            <Button key={route.name} variant="link">
+            <Button
+              className="dark:text-accent"
+              key={route.name}
+              variant="link"
+            >
               <Link href={route.link}>{route.name}</Link>
             </Button>
           ))}
@@ -55,7 +66,7 @@ export default function Nav() {
             size="icon"
             variant="outline"
           >
-            {theme === 'dark' ? <Sun /> : <Moon />}
+            {theme === 'dark' ? <SunIcon /> : <MoonIcon />}
           </Button>
         </div>
       </div>
@@ -74,7 +85,7 @@ export default function Nav() {
           size="icon"
           variant="outline"
         >
-          {theme === 'dark' ? <Sun /> : <Moon />}
+          {theme === 'dark' ? <SunIcon /> : <MoonIcon />}
         </Button>
       </div>
     </div>

@@ -1,10 +1,9 @@
 'use client'
 
-import { useEffect, useMemo, useState } from 'react'
-
 import { zodResolver } from '@hookform/resolvers/zod'
 import { useAtom } from 'jotai'
 import { minBy } from 'lodash'
+import { useEffect, useMemo, useState } from 'react'
 import { useForm } from 'react-hook-form'
 import { z } from 'zod'
 
@@ -62,22 +61,21 @@ export default function Home() {
 
   const gamedayHistory = useMemo(() => {
     if (data?.events && history) {
-      return history?.current.map((h: any) => {
-        return {
-          name:
-            data.events
-              .find((e: any) => e.id === h.event)
-              ?.name.replace('Gameweek ', 'GW')
-              .replace(' - ', '.')
-              .replace('Day ', '') || '',
-          rank: h.overall_rank,
-          gamedayRank: h.rank,
-          totalPoints: h.total_points / 10,
-          gamedayPoints: h.points / 10,
-          benchPoints: h.points_on_bench / 10,
-        }
-      })
-    } else return []
+      return history?.current.map((h: any) => ({
+        name:
+          data.events
+            .find((e: any) => e.id === h.event)
+            ?.name.replace('Gameweek ', 'GW')
+            .replace(' - ', '.')
+            .replace('Day ', '') || '',
+        rank: h.overall_rank,
+        gamedayRank: h.rank,
+        totalPoints: h.total_points / 10,
+        gamedayPoints: h.points / 10,
+        benchPoints: h.points_on_bench / 10,
+      }))
+    }
+    return []
   }, [data?.events, history])
   const bestGameday: any = minBy(gamedayHistory, 'rank')
 
@@ -87,29 +85,29 @@ export default function Home() {
 
   return (
     <>
-      <div className="flex justify-between mb-4">
-        <h2 className="scroll-m-20 text-3xl font-semibold tracking-tight transition-colors first:mt-0">
+      <div className="mb-4 flex justify-between">
+        <h2 className="scroll-m-20 font-semibold text-3xl tracking-tight transition-colors first:mt-0">
           Home
         </h2>
-        <Button variant="outline" onClick={() => setIsDialogOpen(true)}>
+        <Button onClick={() => setIsDialogOpen(true)} variant="outline">
           Edit Team ID
         </Button>
       </div>
-      <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
+      <Dialog onOpenChange={setIsDialogOpen} open={isDialogOpen}>
         <DialogContent className="sm:max-w-[425px]">
           <DialogHeader>
             <DialogTitle>Edit Team ID</DialogTitle>
             <DialogDescription>
               Enter your team ID. You can find your team ID in the URL of the{' '}
               <strong>Points</strong> tab: https://nbafantasy.nba.com/entry/
-              <span className="text-blue-800">
+              <span className="text-primary dark:text-accent">
                 <strong>YOUR-TEAM-ID-HERE</strong>
               </span>
               /event/1
             </DialogDescription>
           </DialogHeader>
           <Form {...form}>
-            <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+            <form className="space-y-6" onSubmit={form.handleSubmit(onSubmit)}>
               <FormField
                 control={form.control}
                 name="teamId"
@@ -118,9 +116,9 @@ export default function Home() {
                     <FormLabel>Team ID</FormLabel>
                     <FormControl>
                       <Input
-                        type="number"
-                        placeholder="0"
                         defaultValue={teamId}
+                        placeholder="0"
+                        type="number"
                         {...field}
                         className="max-w-lg"
                       />
@@ -138,7 +136,7 @@ export default function Home() {
           </Form>
         </DialogContent>
       </Dialog>
-      <div className="grid grid-cols-2 max-sm:grid-cols-1 gap-4">
+      <div className="grid grid-cols-2 gap-4 max-sm:grid-cols-1">
         <Card>
           <CardHeader>
             <CardTitle>Team Profile</CardTitle>

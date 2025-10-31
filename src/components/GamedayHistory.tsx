@@ -1,17 +1,8 @@
 'use client'
 
-import { useState } from 'react'
-
 import { meanBy } from 'lodash'
-import {
-  CartesianGrid,
-  Line,
-  LineChart, // ReferenceLine,
-  ResponsiveContainer,
-  Tooltip,
-  XAxis,
-  YAxis,
-} from 'recharts'
+import { useState } from 'react'
+import { CartesianGrid, Line, LineChart, XAxis, YAxis } from 'recharts'
 
 import {
   Card,
@@ -27,6 +18,12 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select'
+import {
+  type ChartConfig,
+  ChartContainer,
+  ChartTooltip,
+  ChartTooltipContent,
+} from './ui/chart'
 
 type GamedayHistoryProps = {
   data: any
@@ -40,7 +37,7 @@ export default function GamedayHistory({ data }: GamedayHistoryProps) {
       <Card>
         <CardHeader>
           <CardTitle>Season Overview</CardTitle>
-          <Select value={dataKey} onValueChange={(value) => setDataKey(value)}>
+          <Select onValueChange={(value) => setDataKey(value)} value={dataKey}>
             <SelectTrigger className="w-[180px]">
               <SelectValue placeholder="Select..." />
             </SelectTrigger>
@@ -60,13 +57,39 @@ export default function GamedayHistory({ data }: GamedayHistoryProps) {
           </CardDescription>
         </CardHeader>
         <CardContent>
-          <ResponsiveContainer height={400} width="100%">
+          <ChartContainer
+            className="h-[400px] w-full"
+            config={
+              {
+                rank: { label: 'Overall Rank', color: 'var(--color-chart-1)' },
+                gamedayRank: {
+                  label: 'Gameday Rank',
+                  color: 'var(--color-chart-1)',
+                },
+                totalPoints: {
+                  label: 'Total Points',
+                  color: 'var(--color-chart-1)',
+                },
+                gamedayPoints: {
+                  label: 'Gameday Points',
+                  color: 'var(--color-chart-1)',
+                },
+                benchPoints: {
+                  label: 'Bench Points',
+                  color: 'var(--color-chart-1)',
+                },
+              } satisfies ChartConfig
+            }
+          >
             <LineChart data={data}>
-              <CartesianGrid stroke="#ccc" strokeDasharray="5 5" />
+              <CartesianGrid
+                className="stroke-muted-foreground/30!"
+                strokeDasharray="5 5"
+              />
               <XAxis dataKey="name" />
               <YAxis
-                scale={dataKey === 'rank' ? 'log' : 'auto'}
                 domain={['auto', 'auto']}
+                scale={dataKey === 'rank' ? 'log' : 'auto'}
               />
               {/* <ReferenceLine
               y={meanBy(data, dataKey)}
@@ -77,10 +100,15 @@ export default function GamedayHistory({ data }: GamedayHistoryProps) {
               stroke="yellow"
               strokeDasharray="4 4"
             /> */}
-              <Line type="monotone" dataKey={dataKey} stroke="#8884d8" />
-              <Tooltip />
+              <Line
+                dataKey={dataKey}
+                stroke="var(--color-chart-1)"
+                type="monotone"
+              />
+              <ChartTooltip content={<ChartTooltipContent />} />
+              {/* <Tooltip /> */}
             </LineChart>
-          </ResponsiveContainer>
+          </ChartContainer>
         </CardContent>
       </Card>
     </div>

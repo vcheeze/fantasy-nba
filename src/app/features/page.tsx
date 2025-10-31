@@ -1,8 +1,7 @@
 'use client'
 
+import { ThumbsUpIcon } from '@phosphor-icons/react'
 import { useMutation, useQueryClient } from '@tanstack/react-query'
-
-import { ThumbsUp } from 'lucide-react'
 import { toast } from 'sonner'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
@@ -141,7 +140,7 @@ export default function FeatureVotingPage() {
                           : 'outline'
                       }
                     >
-                      <ThumbsUp
+                      <ThumbsUpIcon
                         className={`mr-2 h-4 w-4 ${
                           data.votedFeatures.includes(feature.id)
                             ? 'fill-current'
@@ -167,7 +166,7 @@ export default function FeatureVotingPage() {
                         : 'outline'
                     }
                   >
-                    <ThumbsUp
+                    <ThumbsUpIcon
                       className={`mr-2 h-4 w-4 ${
                         data.votedFeatures.includes(feature.id)
                           ? 'fill-current'
