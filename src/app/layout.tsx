@@ -1,4 +1,5 @@
 import { GoogleAnalytics } from '@next/third-parties/google'
+import { Analytics } from '@vercel/analytics/next'
 import type { Metadata } from 'next'
 import { Inter } from 'next/font/google'
 
@@ -87,6 +88,7 @@ export default function RootLayout({
         </Providers>
       </body>
       <GoogleAnalytics gaId="G-0187RMBX59" />
+      <Analytics />
     </html>
   )
 }
