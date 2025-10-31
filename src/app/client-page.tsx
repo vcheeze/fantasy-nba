@@ -100,7 +100,7 @@ export default function Home() {
             <DialogDescription>
               Enter your team ID. You can find your team ID in the URL of the{' '}
               <strong>Points</strong> tab: https://nbafantasy.nba.com/entry/
-              <span className="text-primary dark:text-accent">
+              <span className="text-primary">
                 <strong>YOUR-TEAM-ID-HERE</strong>
               </span>
               /event/1

@@ -1,15 +1,9 @@
 'use client'
 
-import {
-  Bar,
-  BarChart,
-  ResponsiveContainer,
-  Tooltip,
-  XAxis,
-  YAxis,
-} from 'recharts'
+import { Bar, BarChart, CartesianGrid, Tooltip, XAxis, YAxis } from 'recharts'
 
 import { type IDailyStarters, type IEvent, Position } from '@/hooks/api'
+import { type ChartConfig, ChartContainer } from './ui/chart'
 
 interface DailyScorersChartProps {
   data: IDailyStarters
@@ -53,32 +47,24 @@ export function DailyScorersChart({ data, events }: DailyScorersChartProps) {
   }
 
   return (
-    <div className="h-[400px] w-full animate-fade-in">
-      <ResponsiveContainer height="100%" width="100%">
-        <BarChart data={chartData}>
-          <XAxis
-            axisLine={false}
-            dataKey="gameday"
-            fontSize={12}
-            stroke="#888888"
-            tickLine={false}
-          />
-          <YAxis
-            axisLine={false}
-            fontSize={12}
-            stroke="#888888"
-            tickFormatter={(value) => `${value}`}
-            tickLine={false}
-          />
-          <Tooltip content={<CustomTooltip />} />
-          <Bar
-            className="fill-primary"
-            dataKey="points"
-            fill="currentColor"
-            radius={[4, 4, 0, 0]}
-          />
-        </BarChart>
-      </ResponsiveContainer>
-    </div>
+    <ChartContainer
+      className="h-[400px] w-full animate-fade-in"
+      config={{} satisfies ChartConfig}
+    >
+      <BarChart data={chartData}>
+        <CartesianGrid
+          className="stroke-muted-foreground/30!"
+          strokeDasharray="5 5"
+        />
+        <XAxis axisLine={false} dataKey="gameday" tickLine={false} />
+        <YAxis
+          axisLine={false}
+          tickFormatter={(value) => `${value}`}
+          tickLine={false}
+        />
+        <Tooltip content={<CustomTooltip />} />
+        <Bar className="fill-chart-2" dataKey="points" radius={[4, 4, 0, 0]} />
+      </BarChart>
+    </ChartContainer>
   )
 }

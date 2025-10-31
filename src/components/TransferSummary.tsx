@@ -21,7 +21,7 @@ export function TransferSummary({
         </div>
         <div className="rounded-lg border bg-card p-4">
           <h4 className="mb-2 font-medium text-sm">Total Penalty</h4>
-          <p className="font-bold text-2xl text-destructive">
+          <p className="font-bold text-2xl text-destructive/75">
             {(data.cost / 10).toLocaleString()}
           </p>
         </div>
@@ -30,9 +30,12 @@ export function TransferSummary({
           <p
             className={cn(
               'font-bold text-2xl',
-              data.total_net_points >= 0 ? 'text-chart-2' : 'text-destructive'
+              data.total_net_points >= 0
+                ? 'text-primary/75'
+                : 'text-destructive/75'
             )}
           >
+            {data.total_net_points < 0 && '-'}
             {(data.total_net_points / 10).toLocaleString()}
           </p>
         </div>
@@ -61,7 +64,7 @@ export function TransferSummary({
               <div className="space-y-6">
                 {transfers.map((transfer) => (
                   <div
-                    className="space-y-4 rounded-lg bg-muted/50 p-4"
+                    className="space-y-4 rounded-lg bg-muted/75 p-4"
                     key={`${eventId}-${transfer.transfer_number}`}
                   >
                     <div className="flex items-center justify-between">
@@ -80,8 +83,8 @@ export function TransferSummary({
                           className={cn(
                             'font-medium',
                             transfer.net_points >= 0
-                              ? 'text-chart-2'
-                              : 'text-destructive'
+                              ? 'text-primary/75'
+                              : 'text-destructive/75'
                           )}
                         >
                           {(transfer.net_points / 10).toLocaleString()} pts
@@ -91,13 +94,13 @@ export function TransferSummary({
 
                     <div className="grid grid-cols-2 gap-4">
                       <div className="space-y-2">
-                        <div className="flex items-center text-chart-2">
+                        <div className="flex items-center text-primary/75">
                           <h5 className="font-medium text-sm">In</h5>
                           <span className="ml-2 text-xs">
                             +{transfer.games_gained} games
                           </span>
                         </div>
-                        <div className="space-y-1 rounded bg-card/50 p-2">
+                        <div className="space-y-1 rounded bg-card/75 p-2">
                           <div className="flex items-center justify-between text-sm">
                             <span>
                               {transfer.in.name} ({transfer.in.team_short})
@@ -106,7 +109,7 @@ export function TransferSummary({
                               <span className="text-muted-foreground">
                                 ${(transfer.in.cost / 10).toFixed(1)}
                               </span>
-                              <span className="text-chart-2">
+                              <span className="text-primary/75">
                                 {(transfer.points_gained / 10).toFixed(1)} pts
                               </span>
                             </div>
@@ -115,13 +118,13 @@ export function TransferSummary({
                       </div>
 
                       <div className="space-y-2">
-                        <div className="flex items-center text-destructive">
+                        <div className="flex items-center text-destructive/75">
                           <h5 className="font-medium text-sm">Out</h5>
                           <span className="ml-2 text-xs">
                             -{transfer.games_lost} games
                           </span>
                         </div>
-                        <div className="space-y-1 rounded bg-card/50 p-2">
+                        <div className="space-y-1 rounded bg-card/75 p-2">
                           <div className="flex items-center justify-between text-sm">
                             <span>
                               {transfer.out.name} ({transfer.out.team_short})
@@ -130,7 +133,7 @@ export function TransferSummary({
                               <span className="text-muted-foreground">
                                 ${(transfer.out.cost / 10).toFixed(1)}
                               </span>
-                              <span className="text-destructive">
+                              <span className="text-destructive/75">
                                 {(transfer.points_lost / 10).toFixed(1)} pts
                               </span>
                             </div>

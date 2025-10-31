@@ -2,7 +2,7 @@
 
 import { useAtom } from 'jotai'
 import { useCallback, useEffect, useMemo, useState } from 'react'
-import { Cell, Pie, PieChart } from 'recharts'
+import { Pie, PieChart } from 'recharts'
 
 import { DailyScorersChart } from '@/components/DailyScorersChart'
 import { PlayerTable } from '@/components/PlayerTable'
@@ -125,16 +125,20 @@ export default function Optimize() {
       },
       {} as Record<string, { position: string; value: number; players: number }>
     ) ?? {}
-  const positionDistributionData = Object.values(courtPositionData)
-  console.log('courtPositionData :>> ', courtPositionData)
 
   const COLORS = [
-    'hsl(var(--chart-1))',
-    'hsl(var(--chart-2))',
-    'hsl(var(--chart-3))',
-    'hsl(var(--chart-4))',
-    'hsl(var(--chart-5))',
+    'var(--chart-1)',
+    'var(--chart-2)',
+    'var(--chart-3)',
+    'var(--chart-4)',
+    'var(--chart-5)',
   ]
+  const positionDistributionData = Object.values(courtPositionData).map(
+    (d, index) => ({
+      ...d,
+      fill: COLORS[index],
+    })
+  )
 
   const [teamId] = useAtom(teamIdAtom)
   const { data: myTeam } = useMyTeam(teamId)
@@ -471,7 +475,7 @@ export default function Optimize() {
                   ? `${(playerData.true_gameweek_score / 10).toLocaleString()} (-${(playerData.transfers.cost / 10).toLocaleString()})`
                   : (playerData.true_gameweek_score / 10).toLocaleString()
               }
-              valueClassName="text-chart-2"
+              valueClassName="text-primary"
             />
             <StatCard
               title="Total Cost"
@@ -480,7 +484,7 @@ export default function Optimize() {
             <StatCard
               title="Average Points/Day"
               value={(playerData.average_points_per_day / 10).toFixed(1)}
-              valueClassName="text-chart-2"
+              valueClassName="text-primary"
             />
             <StatCard
               title="Total Games Played"
@@ -510,11 +514,13 @@ export default function Optimize() {
                     className="min-h-[400px] w-full"
                     config={
                       {
-                        position: {
-                          label: 'Position',
+                        'Back Court': {
+                          label: 'Back Court',
+                          color: 'var(--chart-1)',
                         },
-                        value: {
-                          label: 'Number',
+                        'Front Court': {
+                          label: 'Front Court',
+                          color: 'var(--chart-2)',
                         },
                       } satisfies ChartConfig
                     }
@@ -523,27 +529,25 @@ export default function Optimize() {
                       <ChartTooltip
                         content={<ChartTooltipContent hideLabel />}
                       />
-                      <ChartLegend
-                        content={<ChartLegendContent nameKey="value" />}
-                      />
                       <Pie
-                        cx="50%"
-                        cy="50%"
                         data={positionDistributionData}
                         dataKey="value"
                         label={({ position, value }) =>
                           `${value.toFixed(1)} pts`
                         }
                         nameKey="position"
-                        outerRadius={150}
-                      >
-                        {positionDistributionData.map((entry, index) => (
+                        // outerRadius={150}
+                      />
+                      <ChartLegend
+                        content={<ChartLegendContent nameKey="position" />}
+                      />
+                      {/* {positionDistributionData.map((entry, index) => (
                           <Cell
                             fill={COLORS[index % COLORS.length]}
                             key={`cell-${index}`}
                           />
                         ))}
-                      </Pie>
+                      </Pie> */}
                     </PieChart>
                   </ChartContainer>
                 </div>
