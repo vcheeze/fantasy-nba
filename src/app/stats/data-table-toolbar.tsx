@@ -19,6 +19,7 @@ import {
   SelectValue,
 } from '@/components/ui/select'
 import { Separator } from '@/components/ui/separator'
+import type { ITeam } from '@/hooks/api'
 import { DataTableFacetedFilter } from './data-table-faceted-filter'
 import { DataTableRangeFilter } from './data-table-range-filter'
 import { DataTableViewOptions } from './data-table-view-options'
@@ -94,7 +95,7 @@ export function DataTableToolbar<TData>({
             <DataTableFacetedFilter
               column={table.getColumn('team')}
               options={teams.map((team) => ({
-                value: team.id,
+                value: team.id.toString(),
                 label: team.name,
               }))}
               title="Teams"

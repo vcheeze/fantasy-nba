@@ -43,7 +43,7 @@ export const createColumns = (teams: ITeam[]): ColumnDef<Player>[] => [
       const team = teams.find((t) => t.id === row.getValue('team'))
       return team?.short_name || row.getValue('team')
     },
-    filterFn: 'inArray',
+    filterFn: 'inArray' as ColumnDef<Player>['filterFn'],
   },
   {
     accessorKey: 'element_type',
@@ -51,7 +51,7 @@ export const createColumns = (teams: ITeam[]): ColumnDef<Player>[] => [
       <DataTableColumnHeader column={column} title="Position" />
     ),
     cell: ({ row }) => getPositionLabel(row.getValue('element_type')),
-    filterFn: 'inArray',
+    filterFn: 'inArray' as ColumnDef<Player>['filterFn'],
   },
   {
     accessorKey: 'now_cost',
