@@ -1,10 +1,7 @@
 'use client'
 
-import { useState } from 'react'
-
 import { useRouter } from 'next/navigation'
-
-import { Alert, AlertDescription } from '@/components/ui/alert'
+import { useState } from 'react'
 import { Button } from '@/components/ui/button'
 import {
   Card,
@@ -14,8 +11,8 @@ import {
   CardHeader,
   CardTitle,
 } from '@/components/ui/card'
+import { Field, FieldError, FieldLabel } from '@/components/ui/field'
 import { Input } from '@/components/ui/input'
-import { Label } from '@/components/ui/label'
 
 export default function Login() {
   const router = useRouter()
@@ -48,7 +45,7 @@ export default function Login() {
   }
 
   return (
-    <Card className="w-full max-w-md mx-auto">
+    <Card className="mx-auto w-full max-w-md">
       <CardHeader>
         <CardTitle>Login</CardTitle>
         <CardDescription>
@@ -57,38 +54,34 @@ export default function Login() {
       </CardHeader>
       <form onSubmit={handleSubmit}>
         <CardContent className="space-y-4">
-          <div className="space-y-2">
-            <Label htmlFor="email">Email</Label>
+          <Field>
+            <FieldLabel htmlFor="email">Email</FieldLabel>
             <Input
+              disabled={isLoading}
               id="email"
-              type="email"
-              value={email}
               onChange={(e) => setEmail(e.target.value)}
               placeholder="Enter your email"
-              disabled={isLoading}
               required
+              type="email"
+              value={email}
             />
-          </div>
-          <div className="space-y-2">
-            <Label htmlFor="password">Password</Label>
+          </Field>
+          <Field>
+            <FieldLabel htmlFor="password">Password</FieldLabel>
             <Input
+              disabled={isLoading}
               id="password"
-              type="password"
-              value={password}
               onChange={(e) => setPassword(e.target.value)}
               placeholder="Enter your password"
-              disabled={isLoading}
               required
+              type="password"
+              value={password}
             />
-          </div>
-          {error && (
-            <Alert variant="destructive">
-              <AlertDescription>{error}</AlertDescription>
-            </Alert>
-          )}
+          </Field>
+          {error && <FieldError>{error}</FieldError>}
         </CardContent>
         <CardFooter>
-          <Button type="submit" className="w-full" disabled={isLoading}>
+          <Button className="mt-8 w-full" disabled={isLoading} type="submit">
             {isLoading ? 'Logging in...' : 'Login'}
           </Button>
         </CardFooter>

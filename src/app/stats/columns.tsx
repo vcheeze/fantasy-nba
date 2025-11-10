@@ -60,6 +60,7 @@ export const createColumns = (teams: ITeam[]): ColumnDef<Player>[] => [
     ),
     cell: ({ row }) =>
       `$${((row.getValue('now_cost') as number) / 10).toFixed(1)}`,
+    filterFn: 'inNumberRange',
   },
   {
     accessorKey: 'total_points',
@@ -69,19 +70,23 @@ export const createColumns = (teams: ITeam[]): ColumnDef<Player>[] => [
   },
   {
     accessorKey: 'points_per_game',
+    accessorFn: (row) => Number.parseFloat(row.points_per_game), // convert to number
     header: ({ column }) => (
       <DataTableColumnHeader column={column} title="PPG" />
     ),
     cell: ({ row }) =>
       (Number.parseFloat(row.getValue('points_per_game')) / 10).toFixed(1),
+    filterFn: 'inNumberRange',
   },
   {
     accessorKey: 'form',
+    accessorFn: (row) => Number.parseFloat(row.form), // convert to number
     header: ({ column }) => (
       <DataTableColumnHeader column={column} title="Form" />
     ),
     cell: ({ row }) =>
       (Number.parseFloat(row.getValue('form')) / 10).toFixed(1),
+    filterFn: 'inNumberRange',
   },
   {
     accessorKey: 'selected_by_percent',

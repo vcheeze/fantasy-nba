@@ -77,6 +77,14 @@ export function PlayerTable({
         const rowVal = Number(row.getValue(columnId))
         return filterValue.map(Number).includes(rowVal)
       },
+      range: (row, columnId, filterValue) => {
+        if (!Array.isArray(filterValue) || filterValue.length !== 2) {
+          return true
+        }
+        const [min, max] = filterValue
+        const rowValue = Number(row.getValue(columnId))
+        return rowValue >= min && rowValue <= max
+      },
     },
     state: {
       sorting,

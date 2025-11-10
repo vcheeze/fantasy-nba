@@ -1,7 +1,7 @@
 'use client'
 
 import {
-  CalendarDotIcon,
+  CalendarDotsIcon,
   ChartLineIcon,
   HouseSimpleIcon,
   MapTrifoldIcon,
@@ -30,7 +30,7 @@ export default function Nav() {
     {
       name: 'Fixtures',
       link: '/fixtures',
-      icon: <CalendarDotIcon />,
+      icon: <CalendarDotsIcon />,
     },
     {
       name: 'Optimal Team',
