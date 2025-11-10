@@ -318,7 +318,7 @@ const FixtureAnalysisTable = ({
                   ))}
                   <TableCell className="text-center">
                     <span className="inline-flex min-w-8 items-center justify-center rounded-full bg-primary/10 px-2 py-1 font-medium">
-                      {stats.appearances}
+                        {stats.appearances}
                     </span>
                   </TableCell>
                   <TableCell className="text-center">
@@ -396,9 +396,9 @@ export default function Fixtures() {
           <SelectValue placeholder={currentPhase?.name} />
         </SelectTrigger>
         <SelectContent>
-          {data?.phases.map((gameweek) => (
-            <SelectItem key={gameweek.id} value={gameweek.id.toString()}>
-              {gameweek.name}
+          {data?.phases.filter(p => p.id !== 1).map((phaseOption) => (
+            <SelectItem key={phaseOption.id} value={phaseOption.id.toString()}>
+              {phaseOption.name}
             </SelectItem>
           ))}
         </SelectContent>

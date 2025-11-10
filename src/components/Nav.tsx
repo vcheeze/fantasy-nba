@@ -1,6 +1,7 @@
 'use client'
 
 import {
+  CalendarDotIcon,
   ChartLineIcon,
   HouseSimpleIcon,
   MapTrifoldIcon,
@@ -27,14 +28,19 @@ export default function Nav() {
     //   link: '/planner',
     // },
     {
-      name: 'Fixtures Analyzer',
+      name: 'Fixtures',
       link: '/fixtures',
-      icon: <ChartLineIcon />,
+      icon: <CalendarDotIcon />,
     },
     {
       name: 'Optimal Team',
       link: '/optimize',
       icon: <UsersIcon />,
+    },
+    {
+      name: 'Stats',
+      link: '/stats',
+      icon: <ChartLineIcon />,
     },
     {
       name: 'Roadmap',
@@ -51,7 +57,7 @@ export default function Nav() {
         <h1>Fantasy NBA Planner</h1>
         <div className="flex md:gap-2">
           {ROUTES.map((route) => (
-            <Button key={route.name} variant="link">
+            <Button asChild key={route.name} variant="link">
               <Link href={route.link}>{route.name}</Link>
             </Button>
           ))}

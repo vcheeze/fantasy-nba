@@ -7,6 +7,20 @@ export interface IElement {
   first_name: string
   second_name: string
   team: number
+  web_name: string
+  now_cost: number
+  total_points: number
+  points_per_game: string
+  form: string
+  selected_by_percent: string
+  minutes: number
+  points_scored: number
+  rebounds: number
+  assists: number
+  blocks: number
+  steals: number
+  status: 'a' | 'i' | 'd' | 'u'
+  news: string
 }
 
 export interface IEvent {
@@ -26,6 +40,7 @@ export interface IPhase {
 export interface ITeam {
   id: number
   name: string
+  short_name: string
 }
 
 interface IMetadata {
@@ -42,11 +57,10 @@ const fetchMetadata = async () => {
   return parsed as IMetadata
 }
 
-const useMetadata = () => {
-  return useQuery({
+const useMetadata = () =>
+  useQuery({
     queryKey: ['metadata'],
     queryFn: () => fetchMetadata(),
   })
-}
 
 export { useMetadata }
