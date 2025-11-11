@@ -5,6 +5,7 @@ import type { Metadata } from 'next'
 import { Inter } from 'next/font/google'
 
 import Nav from '@/components/Nav'
+import { ScrollArea } from '@/components/ui/scroll-area'
 import { Toaster } from '@/components/ui/sonner'
 
 import './globals.css'
@@ -83,9 +84,11 @@ export default function RootLayout({
           disableTransitionOnChange
           enableSystem
         >
-          <Nav />
-          <div className="container mx-auto p-8 max-sm:mb-12">{children}</div>
-          <Toaster />
+          <ScrollArea className="h-screen">
+            <Nav />
+            <div className="container mx-auto p-8 max-sm:mb-12">{children}</div>
+            <Toaster />
+          </ScrollArea>
         </Providers>
       </body>
       <GoogleAnalytics gaId="G-0187RMBX59" />

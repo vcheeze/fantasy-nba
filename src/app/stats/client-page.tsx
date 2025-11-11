@@ -1,5 +1,6 @@
 'use client'
 
+import PriceChangeLadder from '@/components/PriceChangeLadder'
 import { useMetadata } from '@/hooks/api'
 
 import { createColumns } from './columns'
@@ -27,6 +28,9 @@ export default function Stats() {
         data={players.filter((p) => p.status !== 'u')}
         teams={teams}
       />
+      <div className="grid gap-4 lg:grid-cols-2">
+        <PriceChangeLadder data={players} />
+      </div>
     </div>
   )
 }

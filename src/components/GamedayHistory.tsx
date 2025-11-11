@@ -2,7 +2,14 @@
 
 import { meanBy } from 'lodash'
 import { useState } from 'react'
-import { CartesianGrid, Line, LineChart, XAxis, YAxis } from 'recharts'
+import {
+  CartesianGrid,
+  Line,
+  LineChart,
+  ReferenceLine,
+  XAxis,
+  YAxis,
+} from 'recharts'
 
 import {
   Card,
@@ -18,6 +25,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select'
+import type { IChip } from '@/hooks/api'
 import {
   type ChartConfig,
   ChartContainer,
@@ -27,9 +35,10 @@ import {
 
 type GamedayHistoryProps = {
   data: any
+  chips?: IChip[]
 }
 
-export default function GamedayHistory({ data }: GamedayHistoryProps) {
+export default function GamedayHistory({ data, chips }: GamedayHistoryProps) {
   const [dataKey, setDataKey] = useState('rank')
 
   return (
@@ -37,6 +46,9 @@ export default function GamedayHistory({ data }: GamedayHistoryProps) {
       <Card>
         <CardHeader>
           <CardTitle>Season Overview</CardTitle>
+          <CardDescription>
+            Track your season performance over time
+          </CardDescription>
           <Select onValueChange={(value) => setDataKey(value)} value={dataKey}>
             <SelectTrigger className="w-[180px]">
               <SelectValue placeholder="Select..." />
@@ -49,12 +61,12 @@ export default function GamedayHistory({ data }: GamedayHistoryProps) {
               <SelectItem value="benchPoints">Bench Points</SelectItem>
             </SelectContent>
           </Select>
-          <CardDescription>
+          {/* <CardDescription>
             {dataKey === 'gamedayRank' &&
               `Average Gameday rank: ${meanBy(data, 'gamedayRank').toFixed(2)}`}
             {dataKey === 'gamedayPoints' &&
               `Average Gameday points: ${meanBy(data, 'gamedayPoints').toFixed(2)}`}
-          </CardDescription>
+          </CardDescription> */}
         </CardHeader>
         <CardContent>
           <ChartContainer
@@ -91,15 +103,27 @@ export default function GamedayHistory({ data }: GamedayHistoryProps) {
                 domain={['auto', 'auto']}
                 scale={dataKey === 'rank' ? 'log' : 'auto'}
               />
-              {/* <ReferenceLine
-              y={meanBy(data, dataKey)}
-              label={{
-                value: `Average: ${meanBy(data, dataKey).toFixed(2)}`,
-                position: "left",
-              }}
-              stroke="yellow"
-              strokeDasharray="4 4"
-            /> */}
+              <ReferenceLine
+                label={{
+                  value: `Average: ${meanBy(data, dataKey).toFixed(2)}`,
+                  position: 'insideBottomLeft',
+                }}
+                stroke="var(--color-chart-2)"
+                strokeDasharray="4 4"
+                y={meanBy(data, dataKey)}
+              />
+              {chips?.map((chip) => (
+                <ReferenceLine
+                  key={chip.id}
+                  label={{
+                    value: chip.name,
+                    position: 'insideTopLeft',
+                  }}
+                  stroke="var(--color-chart-4)"
+                  strokeDasharray="4 4"
+                  x={data.find((d) => d.event === chip.event).name}
+                />
+              ))}
               <Line
                 dataKey={dataKey}
                 stroke="var(--color-chart-1)"

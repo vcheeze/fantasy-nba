@@ -67,6 +67,7 @@ export const createColumns = (teams: ITeam[]): ColumnDef<Player>[] => [
     header: ({ column }) => (
       <DataTableColumnHeader column={column} title="Total Points" />
     ),
+    cell: ({ row }) => Number.parseFloat(row.getValue('total_points')) / 10,
   },
   {
     accessorKey: 'points_per_game',

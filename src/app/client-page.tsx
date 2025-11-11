@@ -73,6 +73,7 @@ export default function Home() {
         totalPoints: h.total_points / 10,
         gamedayPoints: h.points / 10,
         benchPoints: h.points_on_bench / 10,
+        event: h.event,
       }))
     }
     return []
@@ -165,15 +166,12 @@ export default function Home() {
           </CardHeader>
           <CardContent>
             <p>
-              <strong>Current Rank</strong>:{' '}
-              {gamedayHistory[gamedayHistory.length - 1]?.rank}
+              <strong>Current Rank</strong>: {gamedayHistory.at(-1)?.rank}
             </p>
             <p>
               <strong>Percentile Rank</strong>: Top{' '}
               {(data?.total_players
-                ? (gamedayHistory[gamedayHistory.length - 1]?.rank /
-                    data.total_players) *
-                  100
+                ? (gamedayHistory.at(-1)?.rank / data.total_players) * 100
                 : 100
               ).toFixed(2)}{' '}
               %
@@ -185,7 +183,10 @@ export default function Home() {
           </CardContent>
         </Card>
       </div>
-      <GamedayHistory data={gamedayHistory} />
+      <GamedayHistory
+        chips={history?.chips.filter((chip) => chip.name !== 'phcapt')} // filter out captaincy chips
+        data={gamedayHistory}
+      />
     </>
   )
 }

@@ -21,6 +21,7 @@ export interface IElement {
   steals: number
   status: 'a' | 'i' | 'd' | 'u'
   news: string
+  cost_change_start: number
 }
 
 export interface IEvent {

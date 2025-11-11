@@ -1,7 +1,7 @@
 import { useQuery } from '@tanstack/react-query'
 import ky from 'ky'
 
-export interface IChip {
+interface IChip {
   status_for_entry: string
   played_by_entry: number[]
   name: string
@@ -47,12 +47,11 @@ const fetchMyTeam = async (teamId: string) => {
   return parsed as IMyTeam
 }
 
-const useMyTeam = (teamId: string) => {
-  return useQuery({
+const useMyTeam = (teamId: string) =>
+  useQuery({
     queryKey: ['myTeam', teamId],
     queryFn: () => fetchMyTeam(teamId),
     enabled: !!teamId,
   })
-}
 
 export { useMyTeam }

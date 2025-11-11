@@ -45,6 +45,7 @@ export function PlayerTable({
     },
   ])
   const [columnVisibility, setColumnVisibility] = useState<VisibilityState>({
+    total_points: false,
     value_season: false,
     value_form: false,
     minutes: false,
