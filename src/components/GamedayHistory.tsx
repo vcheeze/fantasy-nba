@@ -114,14 +114,14 @@ export default function GamedayHistory({ data, chips }: GamedayHistoryProps) {
               />
               {chips?.map((chip) => (
                 <ReferenceLine
-                  key={chip.id}
+                  key={chip.event}
                   label={{
                     value: chip.name,
                     position: 'insideTopLeft',
                   }}
                   stroke="var(--color-chart-4)"
                   strokeDasharray="4 4"
-                  x={data.find((d) => d.event === chip.event).name}
+                  x={data.find((d: any) => d.event === chip.event).name}
                 />
               ))}
               <Line
