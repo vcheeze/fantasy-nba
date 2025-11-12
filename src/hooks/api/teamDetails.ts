@@ -1,5 +1,5 @@
-import { useQuery } from "@tanstack/react-query"
-import ky from "ky"
+import { useQuery } from '@tanstack/react-query'
+import ky from 'ky'
 
 interface ITeamDetails {
   id: number
@@ -9,7 +9,7 @@ interface ITeamDetails {
 
 const fetchTeamDetails = async (teamId: string) => {
   const parsed = await ky
-    .get("/api/team-details", {
+    .get('/api/team-details', {
       searchParams: { teamId },
     })
     .json()
@@ -17,11 +17,11 @@ const fetchTeamDetails = async (teamId: string) => {
   return parsed as ITeamDetails
 }
 
-const useTeamDetails = (teamId: string) => {
-  return useQuery({
-    queryKey: ["teamDetails", teamId],
-    queryFn: () => fetchTeamDetails(teamId),
+const useTeamDetails = (teamId?: string) =>
+  useQuery({
+    queryKey: ['teamDetails', teamId],
+    queryFn: () => fetchTeamDetails(teamId ?? ''),
+    enabled: !!teamId,
   })
-}
 
 export { useTeamDetails }

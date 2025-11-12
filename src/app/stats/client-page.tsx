@@ -9,6 +9,7 @@ import { PlayerTable } from './data-table'
 export default function Stats() {
   const { data } = useMetadata()
   const players = data?.elements || []
+  const activePlayers = players.filter((p) => p.status !== 'u')
   const teams = data?.teams || []
 
   const tableColumns = createColumns(teams)
@@ -23,13 +24,9 @@ export default function Stats() {
           players to visually compare their stats.
         </p>
       </div>
-      <PlayerTable
-        columns={tableColumns}
-        data={players.filter((p) => p.status !== 'u')}
-        teams={teams}
-      />
+      <PlayerTable columns={tableColumns} data={activePlayers} teams={teams} />
       <div className="grid gap-4 lg:grid-cols-2">
-        <PriceChangeLadder data={players} />
+        <PriceChangeLadder data={activePlayers} />
       </div>
     </div>
   )

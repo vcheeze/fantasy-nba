@@ -116,56 +116,55 @@ const FixtureAnalysisTable = ({
   const [isFilterOpen, setIsFilterOpen] = useState(false)
   const processFixtures = () => {
     // Get unique events sorted
-    const gamedays = Array.from(new Set(fixtures.map((f) => f.event))).sort(
-      (a, b) => a - b
-    )
+    const fixtureGamedays = Array.from(
+      new Set(fixtures.map((f) => f.event))
+    ).sort((a, b) => a - b)
 
     // Process team statistics and fixture appearances
     const teamStatsMap = new Map<string, TeamStats>()
 
-    // Initialize all teams with their stats
-    fixtures.forEach((fixture) => {
-      ;[fixture.team_h.toString(), fixture.team_a.toString()].forEach(
-        (team) => {
-          if (!teamStatsMap.has(team)) {
-            teamStatsMap.set(team, {
-              team,
-              appearances: 0,
-              homeGames: 0,
-              awayGames: 0,
-              fixtureAppearances: gamedays.reduce(
-                (acc, event) => ({
-                  ...acc,
-                  [event]: null,
-                }),
-                {}
-              ),
-            })
-          }
+    for (const fixture of fixtures) {
+      const fixtureTeams = [
+        { id: fixture.team_h.toString(), type: 'H', isHome: true },
+        { id: fixture.team_a.toString(), type: 'A', isHome: false },
+      ]
+
+      for (const { id, type, isHome } of fixtureTeams) {
+        // Initialize team if needed
+        if (!teamStatsMap.has(id)) {
+          teamStatsMap.set(id, {
+            team: id,
+            appearances: 0,
+            homeGames: 0,
+            awayGames: 0,
+            fixtureAppearances: fixtureGamedays.reduce(
+              (acc, event) => ({
+                ...acc,
+                [event]: null,
+              }),
+              {}
+            ),
+          })
         }
-      )
-    })
 
-    // Fill in appearances
-    fixtures.forEach((fixture) => {
-      const homeStats = teamStatsMap.get(fixture.team_h.toString())!
-      const awayStats = teamStatsMap.get(fixture.team_a.toString())!
-
-      homeStats.appearances++
-      homeStats.homeGames++
-      homeStats.fixtureAppearances[fixture.event] = 'H'
-
-      awayStats.appearances++
-      awayStats.awayGames++
-      awayStats.fixtureAppearances[fixture.event] = 'A'
-    })
+        // Update appearances
+        const stats = teamStatsMap.get(id)!
+        stats.appearances++
+        if (isHome) {
+          stats.homeGames++
+        } else {
+          stats.awayGames++
+        }
+        stats.fixtureAppearances[fixture.event] = type as 'H' | 'A'
+      }
+    }
 
     // Sort teams by total appearances
     const sortedTeams = Array.from(teamStatsMap.values()).sort(
       (a, b) => b.appearances - a.appearances || a.team.localeCompare(b.team)
     )
 
-    return { gamedays, teamStats: sortedTeams }
+    return { gamedays: fixtureGamedays, teamStats: sortedTeams }
   }
 
   const { gamedays, teamStats } = processFixtures()
@@ -298,7 +297,7 @@ const FixtureAnalysisTable = ({
                 >
                   <TableCell className="font-medium">
                     {teams.find(
-                      (team) => team.id === Number.parseInt(stats.team)
+                      (team) => team.id === Number.parseInt(stats.team, 10)
                     )?.name ?? ''}
                   </TableCell>
                   {gamedays.map((event) => (
@@ -318,7 +317,7 @@ const FixtureAnalysisTable = ({
                   ))}
                   <TableCell className="text-center">
                     <span className="inline-flex min-w-8 items-center justify-center rounded-full bg-primary/10 px-2 py-1 font-medium">
-                        {stats.appearances}
+                      {stats.appearances}
                     </span>
                   </TableCell>
                   <TableCell className="text-center">
@@ -396,11 +395,16 @@ export default function Fixtures() {
           <SelectValue placeholder={currentPhase?.name} />
         </SelectTrigger>
         <SelectContent>
-          {data?.phases.filter(p => p.id !== 1).map((phaseOption) => (
-            <SelectItem key={phaseOption.id} value={phaseOption.id.toString()}>
-              {phaseOption.name}
-            </SelectItem>
-          ))}
+          {data?.phases
+            .filter((p) => p.id !== 1)
+            .map((phaseOption) => (
+              <SelectItem
+                key={phaseOption.id}
+                value={phaseOption.id.toString()}
+              >
+                {phaseOption.name}
+              </SelectItem>
+            ))}
         </SelectContent>
       </Select>
       <FixtureAnalysisTable

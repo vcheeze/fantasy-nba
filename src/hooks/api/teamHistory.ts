@@ -37,10 +37,11 @@ const fetchTeamHistory = async (teamId: string) => {
   return parsed as ITeamHistory
 }
 
-const useTeamHistory = (teamId: string) =>
+const useTeamHistory = (teamId?: string) =>
   useQuery({
     queryKey: ['teamHistory', teamId],
-    queryFn: () => fetchTeamHistory(teamId),
+    queryFn: () => fetchTeamHistory(teamId ?? ''),
+    enabled: !!teamId,
   })
 
 export { useTeamHistory }

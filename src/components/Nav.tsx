@@ -3,7 +3,7 @@
 import {
   CalendarDotsIcon,
   ChartLineIcon,
-  HouseSimpleIcon,
+  HouseIcon,
   MapTrifoldIcon,
   MoonIcon,
   SunIcon,
@@ -21,7 +21,7 @@ export default function Nav() {
     {
       name: 'Home',
       link: '/',
-      icon: <HouseSimpleIcon />,
+      icon: <HouseIcon />,
     },
     // {
     //   name: 'Planner',

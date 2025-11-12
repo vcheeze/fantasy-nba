@@ -6,9 +6,28 @@ import { Badge } from '@/components/ui/badge'
 import type { ITeam, IElement as Player } from '@/hooks/api/metadata'
 import { DataTableColumnHeader } from './data-table-column-header'
 
-const getPositionLabel = (type: number): string => {
-  const positions: Record<number, string> = { 1: 'BC', 2: 'FC' }
-  return positions[type] || 'N/A'
+const getPositionBadge = (type: number) => {
+  const variants: Record<
+    number,
+    {
+      label: string
+      className: string
+    }
+  > = {
+    1: {
+      label: 'BC',
+      className: 'bg-primary/25 hover:bg-primary/50 text-primary',
+    },
+    2: {
+      label: 'FC',
+      className: 'bg-secondary/25 hover:bg-secondary/50 text-secondary',
+    },
+  }
+  const config = variants[type] || {
+    label: 'N/A',
+    className: 'bg-muted text-muted-foreground',
+  }
+  return <Badge className={config.className}>{config.label}</Badge>
 }
 
 const getStatusBadge = (status: string) => {
@@ -50,7 +69,7 @@ export const createColumns = (teams: ITeam[]): ColumnDef<Player>[] => [
     header: ({ column }) => (
       <DataTableColumnHeader column={column} title="Position" />
     ),
-    cell: ({ row }) => getPositionLabel(row.getValue('element_type')),
+    cell: ({ row }) => getPositionBadge(row.getValue('element_type')),
     filterFn: 'inArray' as ColumnDef<Player>['filterFn'],
   },
   {
@@ -61,13 +80,6 @@ export const createColumns = (teams: ITeam[]): ColumnDef<Player>[] => [
     cell: ({ row }) =>
       `$${((row.getValue('now_cost') as number) / 10).toFixed(1)}`,
     filterFn: 'inNumberRange',
-  },
-  {
-    accessorKey: 'total_points',
-    header: ({ column }) => (
-      <DataTableColumnHeader column={column} title="Total Points" />
-    ),
-    cell: ({ row }) => Number.parseFloat(row.getValue('total_points')) / 10,
   },
   {
     accessorKey: 'points_per_game',
@@ -95,6 +107,13 @@ export const createColumns = (teams: ITeam[]): ColumnDef<Player>[] => [
       <DataTableColumnHeader column={column} title="Selected %" />
     ),
     cell: ({ row }) => `${row.getValue('selected_by_percent')}%`,
+  },
+  {
+    accessorKey: 'total_points',
+    header: ({ column }) => (
+      <DataTableColumnHeader column={column} title="Total Points" />
+    ),
+    cell: ({ row }) => Number.parseFloat(row.getValue('total_points')) / 10,
   },
   {
     accessorKey: 'value_season',
