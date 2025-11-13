@@ -38,7 +38,7 @@ type GamedayHistoryProps = {
   chips?: IChip[]
 }
 
-const TagLabel = (props) => {
+const TagLabel = (props: any) => {
   const {
     value,
     viewBox: { x, y },
