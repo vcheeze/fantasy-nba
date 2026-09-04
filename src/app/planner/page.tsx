@@ -1,3 +1,5 @@
-export default function Planner() {
-  return <div>Planner</div>
+import ClientPage from './client-page'
+
+export default function PlannerPage() {
+  return <ClientPage />
 }

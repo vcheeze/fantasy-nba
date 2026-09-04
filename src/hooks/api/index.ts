@@ -1,3 +1,4 @@
+export * from './elementSummary'
 export * from './fixtures'
 export * from './metadata'
 export * from './myTeam'

@@ -3,13 +3,14 @@
 import { useAtom } from 'jotai'
 import { useCallback, useEffect, useMemo, useState } from 'react'
 import { Pie, PieChart } from 'recharts'
-
+import BudgetDistribution from '@/components/BudgetDistribution'
 import { DailyScorersChart } from '@/components/DailyScorersChart'
 import { PlayerTable } from '@/components/PlayerTable'
 import { StatCard } from '@/components/StatCard'
 import { TextLoader } from '@/components/TextLoader'
 import { TransferSummary } from '@/components/TransferSummary'
 import { Button } from '@/components/ui/button'
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import {
   type ChartConfig,
   ChartContainer,
@@ -492,9 +493,20 @@ export default function Optimize() {
             />
           </div>
 
-          <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+          <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
             <div className="lg:col-span-2">
-              <div className="rounded-lg border bg-card p-6">
+              <Card>
+                <CardHeader>
+                  <CardTitle>Daily Scoring Trend</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <DailyScorersChart
+                    data={playerData.daily_starters}
+                    events={metadata.events}
+                  />
+                </CardContent>
+              </Card>
+              {/* <div className="rounded-lg border bg-card p-6">
                 <h3 className="mb-4 font-medium text-lg">
                   Daily Scoring Trend
                 </h3>
@@ -502,77 +514,53 @@ export default function Optimize() {
                   data={playerData.daily_starters}
                   events={metadata.events}
                 />
-              </div>
+              </div> */}
             </div>
             <div className="lg:col-span-1">
-              <div className="h-full rounded-lg border bg-card p-6">
-                <h3 className="mb-4 font-medium text-lg">
-                  Points Distribution
-                </h3>
-                <div className="h-[400px] w-full">
-                  <ChartContainer
-                    className="min-h-[400px] w-full"
-                    config={
-                      {
-                        'Back Court': {
-                          label: 'Back Court',
-                          color: 'var(--chart-1)',
-                        },
-                        'Front Court': {
-                          label: 'Front Court',
-                          color: 'var(--chart-2)',
-                        },
-                      } satisfies ChartConfig
-                    }
-                  >
-                    <PieChart>
-                      <ChartTooltip
-                        content={<ChartTooltipContent hideLabel />}
-                      />
-                      <Pie
-                        data={positionDistributionData}
-                        dataKey="value"
-                        label={({ position, value }) =>
-                          `${value.toFixed(1)} pts`
-                        }
-                        nameKey="position"
-                        // outerRadius={150}
-                      />
-                      <ChartLegend
-                        content={<ChartLegendContent nameKey="position" />}
-                      />
-                      {/* {positionDistributionData.map((entry, index) => (
-                          <Cell
-                            fill={COLORS[index % COLORS.length]}
-                            key={`cell-${index}`}
-                          />
-                        ))}
-                      </Pie> */}
-                    </PieChart>
-                  </ChartContainer>
-                </div>
-                {/* <div className="space-y-4">
-                  {Object.entries(
-                    playerData.squad.reduce(
-                      (acc, player) => ({
-                        ...acc,
-                        [player.position]: (acc[player.position] || 0) + 1,
-                      }),
-                      {} as Record<string, number>,
-                    ),
-                  ).map(([position, count]) => (
-                    <div
-                      key={position}
-                      className="flex items-center justify-between"
+              <Card>
+                <CardHeader>
+                  <CardTitle>Points Distribution</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="h-[400px] w-full">
+                    <ChartContainer
+                      className="min-h-[400px] w-full"
+                      config={
+                        {
+                          'Back Court': {
+                            label: 'Back Court',
+                            color: 'var(--chart-1)',
+                          },
+                          'Front Court': {
+                            label: 'Front Court',
+                            color: 'var(--chart-2)',
+                          },
+                        } satisfies ChartConfig
+                      }
                     >
-                      <span className="text-sm font-medium">{position}</span>
-                      <span className="text-sm text-muted-foreground">
-                        {count} players
-                      </span>
-                    </div>
-                  ))}
-                </div> */}
-              </div>
+                      <PieChart>
+                        <ChartTooltip
+                          content={<ChartTooltipContent hideLabel />}
+                        />
+                        <Pie
+                          data={positionDistributionData}
+                          dataKey="value"
+                          label={({ position, value }) =>
+                            `${value.toFixed(1)} pts`
+                          }
+                          nameKey="position"
+                        />
+                        <ChartLegend
+                          content={<ChartLegendContent nameKey="position" />}
+                        />
+                      </PieChart>
+                    </ChartContainer>
+                  </div>
+                </CardContent>
+              </Card>
+            </div>
+            <div className="lg:col-span-1">
+              <BudgetDistribution data={playerData} />
             </div>
           </div>
 

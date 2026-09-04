@@ -1,7 +1,7 @@
 'use client'
 
 import { useEffect, useState } from 'react'
-
+import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Checkbox } from '@/components/ui/checkbox'
@@ -303,22 +303,22 @@ const FixtureAnalysisTable = ({
                   {gamedays.map((event) => (
                     <TableCell className="text-center" key={event}>
                       {stats.fixtureAppearances[event] && (
-                        <span
-                          className={`inline-flex h-6 w-6 items-center justify-center rounded-full font-medium text-xs ${
+                        <Badge
+                          className={cn(
                             stats.fixtureAppearances[event] === 'H'
-                              ? 'bg-green-100 text-green-800 dark:bg-green-800 dark:text-green-100'
-                              : 'bg-blue-100 text-blue-800 dark:bg-blue-800 dark:text-blue-100'
-                          }`}
+                              ? 'bg-primary/25 text-primary hover:bg-primary/50'
+                              : 'bg-secondary/25 text-secondary hover:bg-secondary/50'
+                          )}
                         >
                           {stats.fixtureAppearances[event]}
-                        </span>
+                        </Badge>
                       )}
                     </TableCell>
                   ))}
                   <TableCell className="text-center">
-                    <span className="inline-flex min-w-8 items-center justify-center rounded-full bg-primary/10 px-2 py-1 font-medium">
+                    <Badge className="bg-muted text-muted-foreground hover:bg-muted/80">
                       {stats.appearances}
-                    </span>
+                    </Badge>
                   </TableCell>
                   <TableCell className="text-center">
                     {stats.homeGames}
