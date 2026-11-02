@@ -560,8 +560,10 @@ export default function Optimize() {
                       <Pie
                         data={positionDistributionData}
                         dataKey="value"
-                        label={({ position, value }) =>
-                          `${value.toFixed(1)} pts`
+                        label={({ value }) =>
+                          typeof value === 'number'
+                            ? `${value.toFixed(1)} pts`
+                            : ''
                         }
                         nameKey="position"
                         // outerRadius={150}

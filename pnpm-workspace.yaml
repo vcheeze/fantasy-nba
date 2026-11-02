@@ -1,0 +1,8 @@
+# `packages` is required by the pnpm Vercel runs. `allowBuilds` is what
+# pnpm 10.26+ reads instead of package.json "pnpm.onlyBuiltDependencies".
+packages:
+  - '.'
+allowBuilds:
+  '@vercel/speed-insights': true
+  esbuild: true
+  sharp: true
