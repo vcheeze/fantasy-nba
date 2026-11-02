@@ -23,9 +23,9 @@ export interface IPick {
 
 export interface ITransfer {
   bank: number
-  const: number
-  limit: number
-  mode: number
+  cost: number
+  limit: number | null
+  made: number
   status: string
   value: number
 }

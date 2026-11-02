@@ -16,11 +16,11 @@ const getPositionBadge = (type: number) => {
   > = {
     1: {
       label: 'BC',
-      className: 'bg-primary/25 hover:bg-primary/50 text-primary',
+      className: 'bg-primary/15 hover:bg-primary/25 text-primary',
     },
     2: {
       label: 'FC',
-      className: 'bg-secondary/25 hover:bg-secondary/50 text-secondary',
+      className: 'bg-signal/15 hover:bg-signal/25 text-signal',
     },
   }
   const config = variants[type] || {
@@ -32,13 +32,22 @@ const getPositionBadge = (type: number) => {
 
 const getStatusBadge = (status: string) => {
   const variants: Record<string, { label: string; className: string }> = {
-    a: { label: 'Available', className: 'bg-emerald-600 hover:bg-emerald-700' },
-    i: { label: 'Injured', className: 'bg-rose-600 hover:bg-rose-700' },
-    d: { label: 'Doubtful', className: 'bg-amber-600 hover:bg-amber-700' },
+    a: {
+      label: 'Available',
+      className: 'bg-primary text-primary-foreground hover:bg-primary/90',
+    },
+    i: {
+      label: 'Injured',
+      className: 'bg-signal text-signal-foreground hover:bg-signal/90',
+    },
+    d: {
+      label: 'Doubtful',
+      className: 'border-signal/50 bg-signal/10 text-signal hover:bg-signal/15',
+    },
   }
   const config = variants[status] || {
     label: 'Unknown',
-    className: 'bg-gray-600 hover:bg-gray-700',
+    className: 'bg-muted text-muted-foreground hover:bg-muted',
   }
   return <Badge className={config.className}>{config.label}</Badge>
 }

@@ -1,25 +1,41 @@
 import { GoogleAnalytics } from '@next/third-parties/google'
 import { Analytics } from '@vercel/analytics/next'
 import { SpeedInsights } from '@vercel/speed-insights/next'
-import type { Metadata } from 'next'
-import { Inter } from 'next/font/google'
+import type { Metadata, Viewport } from 'next'
+import { Big_Shoulders_Display, Inter, JetBrains_Mono } from 'next/font/google'
 
 import Nav from '@/components/Nav'
-import { ScrollArea } from '@/components/ui/scroll-area'
 import { Toaster } from '@/components/ui/sonner'
+import { SITE_DESCRIPTION, SITE_NAME, SITE_URL } from '@/lib/site'
 
 import './globals.css'
 import Providers from './providers'
 
-const inter = Inter({ subsets: ['latin'] })
+const inter = Inter({ subsets: ['latin'], variable: '--font-inter' })
+const bigShoulders = Big_Shoulders_Display({
+  subsets: ['latin'],
+  weight: ['700', '800'],
+  variable: '--font-big-shoulders',
+})
+const jetbrainsMono = JetBrains_Mono({
+  subsets: ['latin'],
+  variable: '--font-jetbrains-mono',
+})
+
+export const viewport: Viewport = {
+  themeColor: [
+    { media: '(prefers-color-scheme: light)', color: '#f4f7fa' },
+    { media: '(prefers-color-scheme: dark)', color: '#07101a' },
+  ],
+}
 
 export const metadata: Metadata = {
+  metadataBase: new URL(SITE_URL),
   title: {
     default: 'Fantasy NBA Planner | Optimize Your Fantasy Basketball Team',
     template: '%s | Fantasy NBA Planner',
   },
-  description:
-    'Advanced tools and visualizations for your NBA Fantasy Salary Cap Edition team. Optimize transfers, analyze player stats, and maximize your weekly points.',
+  description: SITE_DESCRIPTION,
   keywords: [
     'Fantasy NBA',
     'Fantasy NBA Salary Cap Edition',
@@ -34,27 +50,26 @@ export const metadata: Metadata = {
     'Optimize Fantasy NBA Team',
   ],
   authors: [{ name: 'Fantasy NBA Planner Team' }],
-  creator: 'Fantasy NBA Planner',
-  publisher: 'Fantasy NBA Planner',
+  creator: SITE_NAME,
+  publisher: SITE_NAME,
   category: 'Sports',
-  applicationName: 'Fantasy NBA Planner',
+  applicationName: SITE_NAME,
   verification: {
     google: 'iTDbvkxf0Uls4YGnfxEKt_Sq6Vjti6_GHCTFg0Iv3xg',
   },
   openGraph: {
     type: 'website',
     locale: 'en_US',
-    url: 'https://fantasy-nba.vercel.app',
-    siteName: 'Fantasy NBA Planner',
+    url: SITE_URL,
+    siteName: SITE_NAME,
     title: 'Fantasy NBA Planner | Optimize Your Fantasy Basketball Team',
-    description:
-      'Advanced tools and visualizations for your NBA Fantasy Salary Cap Edition team. Optimize transfers, analyze player stats, and maximize your weekly points.',
+    description: SITE_DESCRIPTION,
     images: [
       {
-        url: 'https://fantasy-nba.vercel.app/og-image.jpg',
+        url: `${SITE_URL}/og-image.jpg`,
         width: 1200,
         height: 630,
-        alt: 'Fantasy NBA Planner',
+        alt: SITE_NAME,
       },
     ],
   },
@@ -63,11 +78,39 @@ export const metadata: Metadata = {
     title: 'Fantasy NBA Planner | Optimize Your Fantasy Basketball Team',
     description:
       'Advanced tools and visualizations for your NBA Fantasy Salary Cap Edition team.',
-    images: ['https://fantasy-nba.vercel.app/twitter-image.jpg'],
+    images: [`${SITE_URL}/twitter-image.jpg`],
   },
-  alternates: {
-    canonical: 'https://fantasy-nba.vercel.app',
-  },
+}
+
+const jsonLd = {
+  '@context': 'https://schema.org',
+  '@graph': [
+    {
+      '@type': 'WebSite',
+      '@id': `${SITE_URL}/#website`,
+      url: SITE_URL,
+      name: SITE_NAME,
+      description: SITE_DESCRIPTION,
+      inLanguage: 'en-US',
+    },
+    {
+      '@type': 'WebApplication',
+      '@id': `${SITE_URL}/#app`,
+      name: SITE_NAME,
+      url: SITE_URL,
+      applicationCategory: 'SportsApplication',
+      operatingSystem: 'Any',
+      browserRequirements: 'Requires JavaScript',
+      description: SITE_DESCRIPTION,
+      featureList: [
+        'Team rank and season history tracking',
+        'Fixture analysis by Gameweek',
+        'Optimal team calculation by form or points per game',
+        'Player stats with filters and price change ladder',
+      ],
+      offers: { '@type': 'Offer', price: '0', priceCurrency: 'USD' },
+    },
+  ],
 }
 
 export default function RootLayout({
@@ -76,24 +119,33 @@ export default function RootLayout({
   children: React.ReactNode
 }) {
   return (
-    <html lang="en" suppressHydrationWarning>
-      <body className={inter.className}>
+    <html
+      className={`${inter.variable} ${bigShoulders.variable} ${jetbrainsMono.variable}`}
+      lang="en"
+      suppressHydrationWarning
+    >
+      <body>
+        <script
+          // biome-ignore lint/security/noDangerouslySetInnerHtml: static JSON-LD
+          dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+          type="application/ld+json"
+        />
         <Providers
           attribute="class"
-          defaultTheme="light"
+          defaultTheme="system"
           disableTransitionOnChange
           enableSystem
         >
-          <ScrollArea className="h-screen">
-            <Nav />
-            <div className="container mx-auto p-8 max-sm:mb-12">{children}</div>
-            <Toaster />
-          </ScrollArea>
+          <Nav />
+          <main className="mx-auto w-full max-w-7xl px-4 pt-8 pb-28 md:px-8 md:pt-12 md:pb-20">
+            {children}
+          </main>
+          <Toaster />
         </Providers>
+        <GoogleAnalytics gaId="G-0187RMBX59" />
+        <Analytics />
+        <SpeedInsights />
       </body>
-      <GoogleAnalytics gaId="G-0187RMBX59" />
-      <Analytics />
-      <SpeedInsights />
     </html>
   )
 }

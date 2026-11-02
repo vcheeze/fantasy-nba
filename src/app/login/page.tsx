@@ -14,6 +14,9 @@ import {
 import { Field, FieldError, FieldLabel } from '@/components/ui/field'
 import { Input } from '@/components/ui/input'
 
+const UNAUTHORIZED = 401
+const TOO_MANY_REQUESTS = 429
+
 export default function Login() {
   const router = useRouter()
   const [email, setEmail] = useState('')
@@ -32,8 +35,14 @@ export default function Login() {
         body: JSON.stringify({ email, password }),
       })
 
-      if (!res.ok) {
+      if (res.status === UNAUTHORIZED) {
         throw new Error('Invalid credentials')
+      }
+      if (res.status === TOO_MANY_REQUESTS) {
+        throw new Error('Too many attempts. Try again later.')
+      }
+      if (!res.ok) {
+        throw new Error('Login is unavailable. Try again.')
       }
 
       router.push('/optimize') // Next.js router navigation
@@ -45,9 +54,12 @@ export default function Login() {
   }
 
   return (
-    <Card className="mx-auto w-full max-w-md">
+    <Card className="mx-auto mt-4 w-full max-w-md animate-fade-in md:mt-10">
       <CardHeader>
-        <CardTitle>Login</CardTitle>
+        <span aria-hidden="true" className="mb-2 block h-1 w-12 bg-signal" />
+        <CardTitle className="font-display font-extrabold text-4xl leading-none tracking-tight">
+          <h1>Login</h1>
+        </CardTitle>
         <CardDescription>
           Enter your credentials to access your account
         </CardDescription>
@@ -57,11 +69,17 @@ export default function Login() {
           <Field>
             <FieldLabel htmlFor="email">Email</FieldLabel>
             <Input
+              autoCapitalize="none"
+              autoComplete="username"
+              autoCorrect="off"
               disabled={isLoading}
               id="email"
+              maxLength={254}
+              name="email"
               onChange={(e) => setEmail(e.target.value)}
               placeholder="Enter your email"
               required
+              spellCheck={false}
               type="email"
               value={email}
             />
@@ -69,8 +87,11 @@ export default function Login() {
           <Field>
             <FieldLabel htmlFor="password">Password</FieldLabel>
             <Input
+              autoComplete="current-password"
               disabled={isLoading}
               id="password"
+              maxLength={256}
+              name="password"
               onChange={(e) => setPassword(e.target.value)}
               placeholder="Enter your password"
               required

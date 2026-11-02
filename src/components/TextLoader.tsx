@@ -1,88 +1,49 @@
 'use client'
 
+import { AnimatePresence, motion, useReducedMotion } from 'motion/react'
 import { useEffect, useState } from 'react'
 
-import { AnimatePresence, motion } from 'motion/react'
-
-// maybe switch to https://21st.dev/motion-primitives/text-shimmer/default?
-
-interface LoadingTextProps {
+type LoadingTextProps = {
   text: string
-  dots: string
 }
-export function LoadingText({ text, dots }: LoadingTextProps) {
+export function LoadingText({ text }: LoadingTextProps) {
+  const reduce = useReducedMotion()
   return (
-    <div className="relative">
+    <div aria-live="polite" className="relative min-h-7">
       <AnimatePresence mode="wait">
-        <motion.div
-          key={text}
-          initial={{ opacity: 0, y: 10 }}
+        <motion.p
           animate={{ opacity: 1, y: 0 }}
-          exit={{ opacity: 0, y: -10 }}
-          transition={{ duration: 0.3 }}
-          className="text-lg font-medium w-full"
+          className="w-full font-medium text-lg"
+          exit={reduce ? { opacity: 0 } : { opacity: 0, y: -8 }}
+          initial={reduce ? false : { opacity: 0, y: 8 }}
+          key={text}
+          transition={{ type: 'spring', stiffness: 260, damping: 26 }}
         >
           {text}
-          {dots}
-        </motion.div>
+        </motion.p>
       </AnimatePresence>
     </div>
   )
 }
-interface LoadingProps {
+type LoadingProps = {
   messages: string[]
   interval?: number
-  dotCount?: number
-  direction?: 'horizontal' | 'vertical'
 }
-export function TextLoader({
-  messages,
-  interval = 2000,
-  dotCount = 3,
-  direction = 'vertical',
-}: LoadingProps) {
+export function TextLoader({ messages, interval = 2000 }: LoadingProps) {
   const [currentIndex, setCurrentIndex] = useState(0)
-  const [dots, setDots] = useState('')
   useEffect(() => {
     const messageInterval = setInterval(() => {
       setCurrentIndex((prev) => (prev + 1) % messages.length)
     }, interval)
-    const dotInterval = setInterval(() => {
-      setDots((prev) => (prev.length >= dotCount ? '' : `${prev}.`))
-    }, 500)
-    return () => {
-      clearInterval(messageInterval)
-      clearInterval(dotInterval)
-    }
-  }, [messages.length, interval, dotCount])
-  if (direction === 'horizontal') {
-    return (
-      <div className="flex items-center justify-start gap-3 rounded-sm py-2 border w-full px-3">
-        <motion.div
-          className="size-5 md:size-6 border-[3px] text-primary-foreground border-t-transparent rounded-full"
-          animate={{ rotate: 360 }}
-          transition={{
-            duration: 1,
-            repeat: Number.POSITIVE_INFINITY,
-            ease: 'linear',
-          }}
-        />
-        <LoadingText text={messages[currentIndex]} dots={dots} />
-      </div>
-    )
-  }
+    return () => clearInterval(messageInterval)
+  }, [messages.length, interval])
+
   return (
-    <div className="flex flex-col items-center justify-center gap-4 py-1">
-      <motion.div
-        className="size-10 md:size-12 border-[3px] text-primary-foreground border-t-transparent rounded-full"
-        animate={{ rotate: 360 }}
-        transition={{
-          duration: 1,
-          repeat: Number.POSITIVE_INFINITY,
-          ease: 'linear',
-        }}
-      />
-      <LoadingText text={messages[currentIndex]} dots={dots} />
-    </div>
+    <output className="block space-y-3 rounded-md border bg-card px-5 py-5">
+      <LoadingText text={messages[currentIndex]} />
+      <div className="relative h-1 w-full overflow-hidden rounded-full bg-muted">
+        <div className="absolute inset-y-0 left-0 w-2/5 animate-indeterminate rounded-full bg-signal" />
+      </div>
+    </output>
   )
 }

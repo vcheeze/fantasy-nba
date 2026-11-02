@@ -30,8 +30,8 @@ export async function recordVote(featureId: number) {
       .where(
         and(
           eq(featureVotes.fingerprint, fingerprint),
-          eq(featureVotes.featureId, featureId),
-        ),
+          eq(featureVotes.featureId, featureId)
+        )
       )
       .limit(1)
 
@@ -55,10 +55,12 @@ export async function recordVote(featureId: number) {
         .where(eq(features.id, featureId)),
 
       // record the vote
-      db.insert(featureVotes).values({
-        fingerprint,
-        featureId,
-      }),
+      db
+        .insert(featureVotes)
+        .values({
+          fingerprint,
+          featureId,
+        }),
     ])
 
     revalidatePath('/features')

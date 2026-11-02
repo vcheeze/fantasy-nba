@@ -63,7 +63,7 @@ export function DailyScorersChart({ data, events }: DailyScorersChartProps) {
           tickLine={false}
         />
         <Tooltip content={<CustomTooltip />} />
-        <Bar className="fill-chart-2" dataKey="points" radius={[4, 4, 0, 0]} />
+        <Bar className="fill-chart-1" dataKey="points" radius={[4, 4, 0, 0]} />
       </BarChart>
     </ChartContainer>
   )

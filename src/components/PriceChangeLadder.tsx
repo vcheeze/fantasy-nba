@@ -54,7 +54,9 @@ export default function PriceChangeLadder({
   return (
     <Card>
       <CardHeader>
-        <CardTitle className="text-base">Price Change Ladder</CardTitle>
+        <CardTitle className="font-display font-bold text-2xl leading-none tracking-tight">
+          <h2>Price Change Ladder</h2>
+        </CardTitle>
       </CardHeader>
 
       <CardContent>
@@ -93,8 +95,8 @@ export default function PriceChangeLadder({
                         isZero
                           ? 'text-muted-foreground'
                           : isPositive
-                            ? 'text-emerald-700 dark:text-emerald-500'
-                            : 'text-rose-700 dark:text-rose-500',
+                            ? 'text-primary'
+                            : 'text-signal',
                         'bg-background/80 backdrop-blur'
                       )}
                       title={tooltipText}
@@ -125,9 +127,9 @@ export default function PriceChangeLadder({
                     <div
                       className={cn(
                         'h-6 w-20 rounded-md',
-                        isZero ? 'bg-gray-300' : '',
-                        isPositive ? 'bg-emerald-400/95' : '',
-                        isNegative ? 'bg-rose-400/95' : ''
+                        isZero ? 'bg-muted-foreground/30' : '',
+                        isPositive ? 'bg-primary' : '',
+                        isNegative ? 'bg-signal' : ''
                       )}
                     />
 
@@ -141,8 +143,8 @@ export default function PriceChangeLadder({
                       isZero
                         ? 'text-muted-foreground'
                         : isPositive
-                          ? 'text-emerald-700 dark:text-emerald-500'
-                          : 'text-rose-700 dark:text-rose-500'
+                          ? 'text-primary'
+                          : 'text-signal'
                     )}
                   >
                     {isZero ? '0' : step > 0 ? `+${step}` : step}

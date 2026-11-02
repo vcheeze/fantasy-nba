@@ -1,12 +1,15 @@
 'use client'
 
 import { useAtom } from 'jotai'
-import { useCallback, useEffect, useMemo, useState } from 'react'
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { Pie, PieChart } from 'recharts'
 
+import { WarningCircleIcon } from '@phosphor-icons/react'
+
 import { DailyScorersChart } from '@/components/DailyScorersChart'
+import { PageHeader, SectionTitle } from '@/components/PageHeader'
 import { PlayerTable } from '@/components/PlayerTable'
-import { StatCard } from '@/components/StatCard'
+import { StatStrip } from '@/components/StatStrip'
 import { TextLoader } from '@/components/TextLoader'
 import { TransferSummary } from '@/components/TransferSummary'
 import { Button } from '@/components/ui/button'
@@ -28,12 +31,14 @@ import {
 } from '@/components/ui/select'
 import {
   type IOptimizedTeam,
+  isOptimizedTeam,
   optimizeTeam,
   Position,
   useMetadata,
   useMyTeam,
 } from '@/hooks/api'
 import { getQueryClient } from '@/lib/get-query-client'
+import { cn } from '@/lib/utils'
 import { teamIdAtom } from '@/store'
 
 export default function Optimize() {
@@ -42,6 +47,13 @@ export default function Optimize() {
   const [pointsColumn, setPointsColumn] = useState<string>('form')
   const [isLoading, setIsLoading] = useState(false)
   const [playerData, setPlayerData] = useState<IOptimizedTeam>()
+  const [optimizeError, setOptimizeError] = useState<string>()
+  const resultsRef = useRef<HTMLDivElement>(null)
+
+  // React 18 has no `inert` prop; stale results must not take clicks or focus.
+  useEffect(() => {
+    if (resultsRef.current) resultsRef.current.inert = isLoading
+  }, [isLoading])
   // const [showPlayerSelection, setShowPlayerSelection] = useState(false);
   // const [includedPlayers, setIncludedPlayers] = useState<number[]>([]);
   // const [excludedPlayers, setExcludedPlayers] = useState<number[]>([]);
@@ -150,18 +162,12 @@ export default function Optimize() {
     }
 
     setIsLoading(true)
+    setOptimizeError(undefined)
     // Get all event IDs
     const gamedays = Array.from(
       { length: stopGameday - startGameday + 1 },
       (_, i) => i + startGameday
     )
-
-    // Prepare query parameters (start without transfers)
-    const queryParams: Record<string, unknown> = {
-      gamedays,
-      points_column: pointsColumn,
-      picks: myTeam?.picks || [],
-    }
 
     // Only include transfers if the selected gamedays include the current phase
     // (use `currentPhase` returned from useMemo to avoid re-scanning metadata)
@@ -177,20 +183,6 @@ export default function Optimize() {
               .stop_event
       )
 
-    if (includeTransfers && myTeam?.transfers) {
-      queryParams.transfers = myTeam.transfers
-    }
-
-    // Only include force_include if there are players to include
-    // if (includedPlayers.length > 0) {
-    //   queryParams.force_include = includedPlayers
-    // }
-
-    // Only include force_exclude if there are players to exclude
-    // if (excludedPlayers.length > 0) {
-    //   queryParams.force_exclude = excludedPlayers
-    // }
-
     try {
       const data = await queryClient.fetchQuery({
         queryKey: [
@@ -200,13 +192,29 @@ export default function Optimize() {
           myTeam?.picks,
           includeTransfers ? myTeam?.transfers : null,
         ],
-        queryFn: () => optimizeTeam(queryParams),
+        queryFn: () =>
+          optimizeTeam({
+            gamedays,
+            points_column: pointsColumn,
+            picks: myTeam?.picks || [],
+            ...(includeTransfers && myTeam?.transfers
+              ? { transfers: myTeam.transfers }
+              : {}),
+          }),
       })
+      if (!isOptimizedTeam(data)) {
+        setPlayerData(undefined)
+        setOptimizeError(data.error)
+        return
+      }
       setPlayerData(data)
     } catch (error) {
       console.log('error :>> ', error)
+      setPlayerData(undefined)
+      setOptimizeError('The optimizer request failed.')
+    } finally {
+      setIsLoading(false)
     }
-    setIsLoading(false)
   }, [
     startGameday,
     stopGameday,
@@ -220,21 +228,21 @@ export default function Optimize() {
 
   return (
     <div className="space-y-6 md:space-y-8">
-      <div className="space-y-2">
-        <h2 className="scroll-m-20 font-semibold text-3xl tracking-tight transition-colors first:mt-0">
-          Optimal Team
-        </h2>
-        <p className="text-muted-foreground text-xl">
-          See the optimal team calculated based on player form or points per
-          game, up to one Gameweeks into the future.
-        </p>
-      </div>
+      <PageHeader
+        description="See the optimal team calculated based on player form or points per game, up to one Gameweek into the future."
+        title="Optimal Team"
+      />
 
-      <div>
-        <h4 className="mb-2 scroll-m-20 font-semibold text-xl tracking-tight">
-          Select how you want to calculate the optimal team.
-        </h4>
-        <p className="mb-4 text-muted-foreground text-sm">
+      <section
+        aria-labelledby="optimize-settings-title"
+        className="rounded-md border bg-card p-5 md:p-6"
+      >
+        <SectionTitle className="mb-2 md:text-2xl">
+          <span id="optimize-settings-title">
+            Select how you want to calculate the optimal team.
+          </span>
+        </SectionTitle>
+        <p className="mb-5 max-w-[70ch] text-muted-foreground text-sm">
           Choose the starting and ending Gamedays, and whether you want to
           calculate based on points per game from the last 30 games (form) or
           from the whole season.
@@ -287,15 +295,19 @@ export default function Optimize() {
               value={pointsColumn}
             >
               <SelectTrigger>
-                <SelectValue placeholder="form" />
+                <SelectValue placeholder="Form" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="form">form</SelectItem>
-                <SelectItem value="points_per_game">points per game</SelectItem>
+                <SelectItem value="form">Form</SelectItem>
+                <SelectItem value="points_per_game">Points per game</SelectItem>
               </SelectContent>
             </Select>
           </Field>
-          <Button className="mr-2" onClick={fetchOptimizedTeam}>
+          <Button
+            className="md:mr-2"
+            disabled={isLoading}
+            onClick={fetchOptimizedTeam}
+          >
             Optimize Team
           </Button>
         </div>
@@ -454,7 +466,16 @@ export default function Optimize() {
             
           </div>
         </div> */}
-      </div>
+      </section>
+      {optimizeError ? (
+        <p
+          className="flex items-center gap-2 rounded-md border border-destructive/40 bg-destructive/5 px-4 py-3 text-destructive text-sm"
+          role="alert"
+        >
+          <WarningCircleIcon aria-hidden="true" className="size-5 shrink-0" />
+          {optimizeError}
+        </p>
+      ) : null}
       {isLoading && (
         <TextLoader
           interval={3000}
@@ -466,38 +487,45 @@ export default function Optimize() {
         />
       )}
       {playerData && metadata ? (
-        <>
-          <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-            <StatCard
-              title="Total Points"
-              value={
-                playerData.transfers.cost > 0
-                  ? `${(playerData.true_gameweek_score / 10).toLocaleString()} (-${(playerData.transfers.cost / 10).toLocaleString()})`
-                  : (playerData.true_gameweek_score / 10).toLocaleString()
-              }
-              valueClassName="text-primary"
-            />
-            <StatCard
-              title="Total Cost"
-              value={`$${(playerData.total_cost / 10).toLocaleString()}`}
-            />
-            <StatCard
-              title="Average Points/Day"
-              value={(playerData.average_points_per_day / 10).toFixed(1)}
-              valueClassName="text-primary"
-            />
-            <StatCard
-              title="Total Games Played"
-              value={playerData.total_games}
-            />
-          </div>
+        <div
+          aria-busy={isLoading}
+          className={cn(
+            'space-y-6 transition-opacity duration-200 ease-out md:space-y-8',
+            isLoading && 'opacity-50 delay-150'
+          )}
+          ref={resultsRef}
+        >
+          <StatStrip
+            stats={[
+              {
+                label: 'Total Points',
+                value:
+                  playerData.transfers.cost > 0
+                    ? `${(playerData.true_gameweek_score / 10).toLocaleString()} (-${(playerData.transfers.cost / 10).toLocaleString()})`
+                    : (playerData.true_gameweek_score / 10).toLocaleString(),
+              },
+              {
+                label: 'Total Cost',
+                value: `$${(playerData.total_cost / 10).toLocaleString()}`,
+              },
+              {
+                label: 'Average Points/Day',
+                value: (playerData.average_points_per_day / 10).toFixed(1),
+              },
+              {
+                label: 'Total Games Played',
+                value: playerData.total_games,
+              },
+            ]}
+            variant="scoreboard"
+          />
 
           <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-            <div className="lg:col-span-2">
+            <div className="animate-fade-in lg:col-span-2">
               <div className="rounded-lg border bg-card p-6">
-                <h3 className="mb-4 font-medium text-lg">
+                <SectionTitle className="mb-4 md:text-2xl">
                   Daily Scoring Trend
-                </h3>
+                </SectionTitle>
                 <DailyScorersChart
                   data={playerData.daily_starters}
                   events={metadata.events}
@@ -506,9 +534,9 @@ export default function Optimize() {
             </div>
             <div className="lg:col-span-1">
               <div className="h-full rounded-lg border bg-card p-6">
-                <h3 className="mb-4 font-medium text-lg">
+                <SectionTitle className="mb-4 md:text-2xl">
                   Points Distribution
-                </h3>
+                </SectionTitle>
                 <div className="h-[400px] w-full">
                   <ChartContainer
                     className="min-h-[400px] w-full"
@@ -576,19 +604,21 @@ export default function Optimize() {
             </div>
           </div>
 
-          <div className="rounded-lg border bg-card p-6">
-            <h3 className="mb-4 font-medium text-lg">Transfers</h3>
+          <section className="animate-fade-in">
+            <SectionTitle className="mb-4">Transfers</SectionTitle>
             <TransferSummary
               data={playerData.transfers}
               events={metadata.events}
             />
-          </div>
+          </section>
 
-          <div className="rounded-lg border bg-card p-6">
-            <h3 className="mb-4 font-medium text-lg">Selected Players</h3>
+          <div className="animate-fade-in rounded-lg border bg-card p-6">
+            <SectionTitle className="mb-4 md:text-2xl">
+              Selected Players
+            </SectionTitle>
             <PlayerTable players={playerData.squad} />
           </div>
-        </>
+        </div>
       ) : null}
     </div>
   )

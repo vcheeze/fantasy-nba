@@ -1,6 +1,7 @@
 'use client'
 
 import { meanBy } from 'lodash'
+import { useReducedMotion } from 'motion/react'
 import { useState } from 'react'
 import {
   CartesianGrid,
@@ -82,17 +83,22 @@ const TagLabel = (props: any) => {
 
 export default function GamedayHistory({ data, chips }: GamedayHistoryProps) {
   const [dataKey, setDataKey] = useState('rank')
+  const shouldReduceMotion = useReducedMotion()
 
   return (
-    <div className="my-4">
+    <section className="mt-6 animate-fade-in">
       <Card>
-        <CardHeader>
-          <CardTitle>Season Overview</CardTitle>
-          <CardDescription>
-            Track your season performance over time
-          </CardDescription>
+        <CardHeader className="gap-4 md:grid-cols-[1fr_auto] md:items-end">
+          <div className="space-y-2">
+            <CardTitle className="font-display font-bold text-2xl leading-none tracking-tight md:text-3xl">
+              <h2>Season Overview</h2>
+            </CardTitle>
+            <CardDescription>
+              Track your season performance over time
+            </CardDescription>
+          </div>
           <Select onValueChange={(value) => setDataKey(value)} value={dataKey}>
-            <SelectTrigger className="w-[180px]">
+            <SelectTrigger aria-label="Chart metric" className="w-[180px]">
               <SelectValue placeholder="Select..." />
             </SelectTrigger>
             <SelectContent>
@@ -174,16 +180,26 @@ export default function GamedayHistory({ data, chips }: GamedayHistoryProps) {
                 />
               ))}
               <Line
+                activeDot={{ r: 5, strokeWidth: 0 }}
+                animationDuration={600}
+                animationEasing="ease-in-out"
                 dataKey={dataKey}
+                dot={false}
+                isAnimationActive={!shouldReduceMotion}
                 stroke="var(--color-chart-1)"
+                strokeWidth={2.25}
                 type="monotone"
               />
-              <ChartTooltip content={<ChartTooltipContent />} />
+              <ChartTooltip
+                animationDuration={120}
+                content={<ChartTooltipContent />}
+                isAnimationActive={!shouldReduceMotion}
+              />
               {/* <Tooltip /> */}
             </LineChart>
           </ChartContainer>
         </CardContent>
       </Card>
-    </div>
+    </section>
   )
 }

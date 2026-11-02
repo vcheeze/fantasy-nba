@@ -4,7 +4,7 @@ export async function GET(request: NextRequest) {
   const phase = request.nextUrl.searchParams.get('phase')
 
   const res = await fetch(
-    `https://nbafantasy.nba.com/api/fixtures/${phase ? `?phase=${phase}` : ''}`,
+    `https://nbafantasy.nba.com/api/fixtures/${phase ? `?phase=${phase}` : ''}`
   )
   const data = await res.json()
 

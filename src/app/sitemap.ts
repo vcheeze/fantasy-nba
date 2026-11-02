@@ -1,7 +1,9 @@
 import type { MetadataRoute } from 'next'
 
+import { SITE_URL } from '@/lib/site'
+
 export default function sitemap(): MetadataRoute.Sitemap {
-  const baseUrl = 'https://fantasy-nba.vercel.app'
+  const baseUrl = SITE_URL
   const currentDate = new Date()
 
   return [
@@ -24,9 +26,9 @@ export default function sitemap(): MetadataRoute.Sitemap {
       priority: 0.8,
     },
     {
-      url: `${baseUrl}/planner`,
+      url: `${baseUrl}/stats`,
       lastModified: currentDate,
-      changeFrequency: 'weekly',
+      changeFrequency: 'daily',
       priority: 0.8,
     },
     {
