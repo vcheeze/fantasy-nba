@@ -2,7 +2,6 @@ import { GoogleAnalytics } from '@next/third-parties/google'
 import { Analytics } from '@vercel/analytics/next'
 import { SpeedInsights } from '@vercel/speed-insights/next'
 import type { Metadata, Viewport } from 'next'
-import { Big_Shoulders_Display, Inter, JetBrains_Mono } from 'next/font/google'
 
 import Nav from '@/components/Nav'
 import { Toaster } from '@/components/ui/sonner'
@@ -10,17 +9,6 @@ import { SITE_DESCRIPTION, SITE_NAME, SITE_URL } from '@/lib/site'
 
 import './globals.css'
 import Providers from './providers'
-
-const inter = Inter({ subsets: ['latin'], variable: '--font-inter' })
-const bigShoulders = Big_Shoulders_Display({
-  subsets: ['latin'],
-  weight: ['700', '800'],
-  variable: '--font-big-shoulders',
-})
-const jetbrainsMono = JetBrains_Mono({
-  subsets: ['latin'],
-  variable: '--font-jetbrains-mono',
-})
 
 export const viewport: Viewport = {
   themeColor: [
@@ -119,11 +107,7 @@ export default function RootLayout({
   children: React.ReactNode
 }) {
   return (
-    <html
-      className={`${inter.variable} ${bigShoulders.variable} ${jetbrainsMono.variable}`}
-      lang="en"
-      suppressHydrationWarning
-    >
+    <html lang="en" suppressHydrationWarning>
       <body>
         <script
           // biome-ignore lint/security/noDangerouslySetInnerHtml: static JSON-LD

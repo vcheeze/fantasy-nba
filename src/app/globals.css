@@ -5,11 +5,42 @@
 @custom-variant dark (&:is(.dark *));
 
 /*
+  Self-hosted so deployment does not need Google Fonts while compiling.
+  These are the Latin variable files for the weights the interface uses.
+*/
+@font-face {
+  font-family: Inter;
+  font-style: normal;
+  font-weight: 400 700;
+  font-display: swap;
+  src: url("/fonts/inter-latin.woff2") format("woff2");
+}
+
+@font-face {
+  font-family: "Big Shoulders Display";
+  font-style: normal;
+  font-weight: 700 800;
+  font-display: swap;
+  src: url("/fonts/big-shoulders-display-latin.woff2") format("woff2");
+}
+
+@font-face {
+  font-family: "JetBrains Mono";
+  font-style: normal;
+  font-weight: 400 600;
+  font-display: swap;
+  src: url("/fonts/jetbrains-mono-latin.woff2") format("woff2");
+}
+
+/*
   Brand: navy base (#0b334d) + one red signal accent. Red is never used as text on navy.
   Shape: surfaces and controls use --radius (6px), tiny inner marks use radius-sm (4px), chips are rounded-full.
   Z-index scale: z-40 site navigation, z-50 overlays (dialog, sheet, drawer, popover, toast).
 */
 :root {
+  --font-inter: Inter;
+  --font-big-shoulders: "Big Shoulders Display";
+  --font-jetbrains-mono: "JetBrains Mono";
   --background: oklch(0.975 0.005 245);
   --foreground: oklch(0.2 0.03 245);
   --card: oklch(0.993 0.002 245);
