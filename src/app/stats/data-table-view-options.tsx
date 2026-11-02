@@ -21,7 +21,12 @@ export function DataTableViewOptions<TData>({
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
-        <Button className="ml-auto hidden h-9 lg:flex" variant="outline">
+        <Button
+          aria-label="Choose columns"
+          className="shrink-0"
+          size="sm"
+          variant="outline"
+        >
           <ColumnsIcon />
           Columns
         </Button>

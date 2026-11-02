@@ -27,6 +27,7 @@ import {
   SelectValue,
 } from '@/components/ui/select'
 import type { IChip } from '@/hooks/api'
+import { useMediaQuery } from '@/hooks/use-media-query'
 import {
   type ChartConfig,
   ChartContainer,
@@ -81,24 +82,57 @@ const TagLabel = (props: any) => {
   )
 }
 
+function compactAxisTick(value: number) {
+  if (!Number.isFinite(value)) {
+    return ''
+  }
+  const absolute = Math.abs(value)
+  if (absolute >= 1_000_000) {
+    return `${(value / 1_000_000).toFixed(1)}m`
+  }
+  if (absolute >= 10_000) {
+    return `${Math.round(value / 1000)}k`
+  }
+  if (absolute >= 1000) {
+    return `${(value / 1000).toFixed(1)}k`
+  }
+  if (Number.isInteger(value)) {
+    return `${value}`
+  }
+  return value.toFixed(1)
+}
+
 export default function GamedayHistory({ data, chips }: GamedayHistoryProps) {
   const [dataKey, setDataKey] = useState('rank')
   const shouldReduceMotion = useReducedMotion()
+  const isMobile = useMediaQuery('(max-width: 767px)')
+  const average = data?.length ? meanBy(data, dataKey) : null
 
   return (
     <section className="mt-6 animate-fade-in">
       <Card>
         <CardHeader className="gap-4 md:grid-cols-[1fr_auto] md:items-end">
           <div className="space-y-2">
-            <CardTitle className="font-display font-bold text-2xl leading-none tracking-tight md:text-3xl">
+            <CardTitle className="font-bold font-display text-2xl leading-none tracking-tight md:text-3xl">
               <h2>Season Overview</h2>
             </CardTitle>
             <CardDescription>
               Track your season performance over time
             </CardDescription>
+            {isMobile &&
+            dataKey !== 'totalPoints' &&
+            typeof average === 'number' &&
+            Number.isFinite(average) ? (
+              <p className="font-medium text-foreground text-sm tabular-nums">
+                Average {average.toFixed(2)}
+              </p>
+            ) : null}
           </div>
           <Select onValueChange={(value) => setDataKey(value)} value={dataKey}>
-            <SelectTrigger aria-label="Chart metric" className="w-[180px]">
+            <SelectTrigger
+              aria-label="Chart metric"
+              className="w-full md:w-[180px]"
+            >
               <SelectValue placeholder="Select..." />
             </SelectTrigger>
             <SelectContent>
@@ -118,7 +152,7 @@ export default function GamedayHistory({ data, chips }: GamedayHistoryProps) {
         </CardHeader>
         <CardContent>
           <ChartContainer
-            className="h-[400px] w-full"
+            className="aspect-auto h-[280px] w-full md:h-[400px]"
             config={
               {
                 rank: { label: 'Overall Rank', color: 'var(--color-chart-1)' },
@@ -141,22 +175,35 @@ export default function GamedayHistory({ data, chips }: GamedayHistoryProps) {
               } satisfies ChartConfig
             }
           >
-            <LineChart data={data}>
+            <LineChart
+              data={data}
+              margin={{ top: 16, right: 8, left: 0, bottom: 0 }}
+            >
               <CartesianGrid
                 className="stroke-muted-foreground/30!"
                 strokeDasharray="5 5"
               />
-              <XAxis dataKey="name" />
+              <XAxis
+                dataKey="name"
+                interval="equidistantPreserveStart"
+                minTickGap={isMobile ? 28 : 8}
+                tick={{ fontSize: isMobile ? 11 : 12 }}
+              />
               <YAxis
                 domain={['auto', 'auto']}
                 scale={dataKey === 'rank' ? 'log' : 'auto'}
+                tick={{ fontSize: isMobile ? 11 : 12 }}
+                tickFormatter={isMobile ? compactAxisTick : undefined}
+                width={isMobile ? 36 : 48}
               />
               {dataKey !== 'totalPoints' && (
                 <ReferenceLine
                   label={
-                    <TagLabel
-                      value={`Average: ${meanBy(data, dataKey).toFixed(2)}`}
-                    />
+                    isMobile ||
+                    typeof average !== 'number' ||
+                    !Number.isFinite(average) ? undefined : (
+                      <TagLabel value={`Average: ${average.toFixed(2)}`} />
+                    )
                   }
                   // label={{
                   //   value: `Average: ${meanBy(data, dataKey).toFixed(2)}`,
@@ -164,7 +211,7 @@ export default function GamedayHistory({ data, chips }: GamedayHistoryProps) {
                   // }}
                   stroke="var(--color-chart-2)"
                   strokeDasharray="4 4"
-                  y={meanBy(data, dataKey)}
+                  y={average ?? undefined}
                 />
               )}
               {chips?.map((chip) => (
@@ -173,6 +220,7 @@ export default function GamedayHistory({ data, chips }: GamedayHistoryProps) {
                   label={{
                     value: chip.name,
                     position: 'insideTopLeft',
+                    fontSize: isMobile ? 10 : 12,
                   }}
                   stroke="var(--color-chart-4)"
                   strokeDasharray="4 4"

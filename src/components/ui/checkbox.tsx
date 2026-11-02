@@ -1,6 +1,6 @@
 'use client'
 
-import { CheckIcon } from '@phosphor-icons/react'
+import { CheckIcon, MinusIcon } from '@phosphor-icons/react'
 import * as CheckboxPrimitive from '@radix-ui/react-checkbox'
 import * as React from 'react'
 
@@ -12,7 +12,7 @@ const Checkbox = React.forwardRef<
 >(({ className, ...props }, ref) => (
   <CheckboxPrimitive.Root
     className={cn(
-      'peer grid h-4 w-4 shrink-0 place-content-center rounded-sm border border-primary ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 data-[state=checked]:bg-primary data-[state=checked]:text-primary-foreground',
+      'group peer grid h-4 w-4 shrink-0 place-content-center rounded-sm border border-primary ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 data-[state=checked]:bg-primary data-[state=indeterminate]:bg-primary data-[state=checked]:text-primary-foreground data-[state=indeterminate]:text-primary-foreground',
       className
     )}
     ref={ref}
@@ -21,7 +21,8 @@ const Checkbox = React.forwardRef<
     <CheckboxPrimitive.Indicator
       className={cn('grid place-content-center text-current')}
     >
-      <CheckIcon className="h-4 w-4" />
+      <CheckIcon className="col-start-1 row-start-1 h-4 w-4 group-data-[state=indeterminate]:invisible" />
+      <MinusIcon className="invisible col-start-1 row-start-1 h-4 w-4 group-data-[state=indeterminate]:visible" />
     </CheckboxPrimitive.Indicator>
   </CheckboxPrimitive.Root>
 ))

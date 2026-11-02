@@ -109,13 +109,13 @@ export default function Home() {
         aria-labelledby="home-title"
         className="grid items-center gap-8 md:grid-cols-[1.05fr_0.95fr] md:gap-12"
       >
-        <div className="max-w-xl">
+        <div className="min-w-0 max-w-xl">
           <span
             aria-hidden="true"
             className="mb-5 block h-1 w-12 animate-rise bg-signal"
           />
           <h1
-            className="animate-rise font-display font-extrabold text-[2.6rem] leading-[0.95] tracking-tight sm:text-5xl md:text-6xl"
+            className="animate-rise text-balance font-display font-extrabold text-[2.35rem] leading-[0.95] tracking-tight sm:text-5xl md:text-6xl"
             id="home-title"
           >
             Plan every Gameday of your Fantasy NBA team
@@ -128,13 +128,22 @@ export default function Home() {
             optimal Salary Cap Edition squad.
           </p>
           <div
-            className="mt-8 flex animate-rise flex-wrap gap-3"
+            className="mt-8 flex animate-rise flex-col gap-3 sm:flex-row sm:flex-wrap"
             style={{ '--i': 2 } as CSSProperties}
           >
-            <Button onClick={() => setIsDialogOpen(true)} size="lg">
+            <Button
+              className="w-full sm:w-auto"
+              onClick={() => setIsDialogOpen(true)}
+              size="lg"
+            >
               {teamId ? 'Edit Team ID' : 'Enter Team ID'}
             </Button>
-            <Button asChild size="lg" variant="outline">
+            <Button
+              asChild
+              className="w-full sm:w-auto"
+              size="lg"
+              variant="outline"
+            >
               <Link className="group" href="/optimize">
                 Optimal Team
                 <ArrowRightIcon
@@ -146,7 +155,7 @@ export default function Home() {
             </Button>
           </div>
         </div>
-        <div className="relative aspect-[16/10] md:aspect-[4/3]">
+        <div className="relative aspect-[16/10] min-w-0 md:aspect-[4/3]">
           <CourtDiagram className="absolute inset-0 h-full w-full" />
         </div>
       </section>
@@ -159,10 +168,10 @@ export default function Home() {
             <DialogDescription className="leading-relaxed">
               Enter your team ID. You can find your team ID in the URL of the{' '}
               <strong>Points</strong> tab:{' '}
-              <code className="mt-2 block break-all rounded-md bg-muted px-2.5 py-2 font-mono text-foreground text-xs">
-                https://nbafantasy.nba.com/entry/
+              <code className="mt-2 block rounded-md bg-muted px-2.5 py-2 font-mono text-foreground text-xs leading-relaxed">
+                <span className="block">https://nbafantasy.nba.com/entry/</span>
                 <span className="font-bold text-signal">YOUR-TEAM-ID-HERE</span>
-                /event/1
+                <span className="block">/event/1</span>
               </code>
             </DialogDescription>
           </DialogHeader>
@@ -189,7 +198,9 @@ export default function Home() {
               />
               <DialogFooter>
                 <DialogClose asChild>
-                  <Button type="submit">Submit</Button>
+                  <Button className="w-full sm:w-auto" type="submit">
+                    Submit
+                  </Button>
                 </DialogClose>
               </DialogFooter>
             </form>
@@ -208,6 +219,7 @@ export default function Home() {
             isLoading={
               isTeamDetailsLoading || isHistoryLoading || isDataLoading
             }
+            startIndex={3}
             stats={[
               {
                 label: 'Team Name',
@@ -232,7 +244,6 @@ export default function Home() {
                 detail: bestGameday ? bestGameday.name : null,
               },
             ]}
-            startIndex={3}
             variant="scoreboard"
           />
         ) : (

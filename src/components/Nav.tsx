@@ -54,6 +54,7 @@ function ThemeToggle() {
   return (
     <Button
       aria-label="Toggle color theme"
+      className="shrink-0"
       onClick={() => setTheme(resolvedTheme === 'dark' ? 'light' : 'dark')}
       size="icon"
       variant="ghost"
@@ -72,10 +73,10 @@ export default function Nav() {
   return (
     <>
       <header className="sticky top-0 z-40 border-b bg-background/85 backdrop-blur-md">
-        <div className="mx-auto flex h-16 w-full max-w-7xl items-center justify-between gap-6 px-4 md:px-8">
+        <div className="mx-auto flex h-16 w-full max-w-7xl items-center justify-between gap-3 px-4 md:gap-6 md:px-8">
           <Link
             aria-label="Fantasy NBA Planner home"
-            className="rounded-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+            className="min-w-0 rounded-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
             href="/"
           >
             <Wordmark />
@@ -115,18 +116,20 @@ export default function Nav() {
                 <Link
                   aria-current={active ? 'page' : undefined}
                   className={cn(
-                    'relative flex flex-col items-center gap-1 px-1 pt-2.5 pb-2 font-medium text-[11px] text-muted-foreground leading-tight transition-[color,transform] duration-150 ease-out active:scale-[0.97]',
-                    'before:absolute before:inset-x-4 before:top-0 before:h-0.5 before:bg-signal before:opacity-0 before:transition-opacity',
+                    'relative flex min-h-14 w-full min-w-0 flex-col items-center justify-center gap-1 px-0.5 pt-2 pb-1.5 font-medium text-[11px] text-muted-foreground leading-tight transition-[color,transform] duration-150 ease-out active:scale-[0.97]',
+                    'before:absolute before:inset-x-2 before:top-0 before:h-0.5 before:bg-signal before:opacity-0 before:transition-opacity',
                     'aria-[current=page]:text-foreground aria-[current=page]:before:opacity-100'
                   )}
                   href={route.link}
                 >
                   <Icon
                     aria-hidden="true"
-                    className="size-5"
+                    className="size-5 shrink-0"
                     weight={active ? 'fill' : 'regular'}
                   />
-                  <span className="whitespace-nowrap">{route.name}</span>
+                  <span className="max-w-full text-balance text-center leading-tight">
+                    {route.name}
+                  </span>
                 </Link>
               </li>
             )

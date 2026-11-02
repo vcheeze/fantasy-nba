@@ -50,14 +50,14 @@ export function TransferSummary({
 
           return (
             <div className="rounded-lg border bg-card p-4" key={eventId}>
-              <div className="mb-4 flex items-center justify-between">
-                <h4 className="font-medium">
+              <div className="mb-4 flex flex-wrap items-baseline justify-between gap-x-3 gap-y-1">
+                <h4 className="min-w-0 font-medium">
                   {
                     events.find((event) => event.id.toString() === eventId)
                       ?.name
                   }
                 </h4>
-                <span className="text-muted-foreground text-sm">
+                <span className="shrink-0 text-muted-foreground text-sm">
                   {transfers.length} transfer{transfers.length > 1 ? 's' : ''}
                 </span>
               </div>
@@ -67,7 +67,7 @@ export function TransferSummary({
                     className="space-y-4 rounded-lg bg-muted/75 p-4"
                     key={`${eventId}-${transfer.transfer_number}`}
                   >
-                    <div className="flex items-center justify-between">
+                    <div className="flex flex-wrap items-center justify-between gap-2">
                       <div>
                         <span className="font-medium text-sm">
                           Transfer {transfer.transfer_number}
@@ -92,7 +92,7 @@ export function TransferSummary({
                       </div>
                     </div>
 
-                    <div className="grid grid-cols-2 gap-4">
+                    <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 sm:gap-4">
                       <div className="space-y-2">
                         <div className="flex items-center text-primary">
                           <h5 className="font-medium text-sm">In</h5>
@@ -101,11 +101,11 @@ export function TransferSummary({
                           </span>
                         </div>
                         <div className="space-y-1 rounded-md bg-card/75 p-2">
-                          <div className="flex items-center justify-between text-sm">
-                            <span>
+                          <div className="flex flex-col gap-1 text-sm sm:flex-row sm:items-baseline sm:justify-between">
+                            <span className="min-w-0 font-medium">
                               {transfer.in.name} ({transfer.in.team_short})
                             </span>
-                            <div className="space-x-3">
+                            <div className="flex shrink-0 gap-3 tabular-nums">
                               <span className="text-muted-foreground">
                                 ${(transfer.in.cost / 10).toFixed(1)}
                               </span>
@@ -125,11 +125,11 @@ export function TransferSummary({
                           </span>
                         </div>
                         <div className="space-y-1 rounded-md bg-card/75 p-2">
-                          <div className="flex items-center justify-between text-sm">
-                            <span>
+                          <div className="flex flex-col gap-1 text-sm sm:flex-row sm:items-baseline sm:justify-between">
+                            <span className="min-w-0 font-medium">
                               {transfer.out.name} ({transfer.out.team_short})
                             </span>
-                            <div className="space-x-3">
+                            <div className="flex shrink-0 gap-3 tabular-nums">
                               <span className="text-muted-foreground">
                                 ${(transfer.out.cost / 10).toFixed(1)}
                               </span>

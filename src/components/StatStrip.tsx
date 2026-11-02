@@ -55,7 +55,7 @@ export function StatStrip({
       {stats.map((stat, index) => (
         <div
           className={cn(
-            'flex min-w-0 flex-col gap-2 px-5 py-5 md:px-6 md:py-6',
+            'flex min-w-0 flex-col gap-2 px-3.5 py-4 md:px-6 md:py-6',
             cellBorders(index),
             scoreboard && 'border-scoreboard-foreground/15'
           )}
@@ -75,7 +75,7 @@ export function StatStrip({
                 className="animate-value-in"
                 style={{ '--i': index } as CSSProperties}
               >
-                <span className="block truncate font-display font-extrabold text-4xl tabular-nums leading-none md:text-5xl">
+                <span className="block text-balance break-words font-display font-extrabold text-[clamp(1.35rem,6.4vw,2.5rem)] tabular-nums leading-[0.95] md:text-5xl">
                   {stat.value}
                 </span>
                 {stat.detail ? (

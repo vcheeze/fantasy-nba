@@ -59,7 +59,9 @@ export const createColumns = (teams: ITeam[]): ColumnDef<Player>[] => [
       <DataTableColumnHeader column={column} title="Player" />
     ),
     cell: ({ row }) => (
-      <div className="font-medium">{row.getValue('web_name')}</div>
+      <div className="max-w-[8.5rem] font-medium leading-snug md:max-w-none">
+        {row.getValue('web_name')}
+      </div>
     ),
   },
   {

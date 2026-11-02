@@ -11,6 +11,9 @@ import './globals.css'
 import Providers from './providers'
 
 export const viewport: Viewport = {
+  width: 'device-width',
+  initialScale: 1,
+  viewportFit: 'cover',
   themeColor: [
     { media: '(prefers-color-scheme: light)', color: '#f4f7fa' },
     { media: '(prefers-color-scheme: dark)', color: '#07101a' },
@@ -121,7 +124,7 @@ export default function RootLayout({
           enableSystem
         >
           <Nav />
-          <main className="mx-auto w-full max-w-7xl px-4 pt-8 pb-28 md:px-8 md:pt-12 md:pb-20">
+          <main className="mx-auto w-full min-w-0 max-w-7xl overflow-x-clip px-4 pt-8 pb-28 md:px-8 md:pt-12 md:pb-20">
             {children}
           </main>
           <Toaster />

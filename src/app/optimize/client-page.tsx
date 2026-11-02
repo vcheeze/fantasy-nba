@@ -1,10 +1,9 @@
 'use client'
 
+import { WarningCircleIcon } from '@phosphor-icons/react'
 import { useAtom } from 'jotai'
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { Pie, PieChart } from 'recharts'
-
-import { WarningCircleIcon } from '@phosphor-icons/react'
 
 import { DailyScorersChart } from '@/components/DailyScorersChart'
 import { PageHeader, SectionTitle } from '@/components/PageHeader'
@@ -16,8 +15,6 @@ import { Button } from '@/components/ui/button'
 import {
   type ChartConfig,
   ChartContainer,
-  ChartLegend,
-  ChartLegendContent,
   ChartTooltip,
   ChartTooltipContent,
 } from '@/components/ui/chart'
@@ -235,7 +232,7 @@ export default function Optimize() {
 
       <section
         aria-labelledby="optimize-settings-title"
-        className="rounded-md border bg-card p-5 md:p-6"
+        className="min-w-0 rounded-md border bg-card p-4 sm:p-6"
       >
         <SectionTitle className="mb-2 md:text-2xl">
           <span id="optimize-settings-title">
@@ -304,7 +301,7 @@ export default function Optimize() {
             </Select>
           </Field>
           <Button
-            className="md:mr-2"
+            className="w-full md:mr-2 md:w-auto"
             disabled={isLoading}
             onClick={fetchOptimizedTeam}
           >
@@ -520,9 +517,9 @@ export default function Optimize() {
             variant="scoreboard"
           />
 
-          <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-            <div className="animate-fade-in lg:col-span-2">
-              <div className="rounded-lg border bg-card p-6">
+          <div className="grid min-w-0 gap-4 md:grid-cols-2 lg:grid-cols-3">
+            <div className="min-w-0 animate-fade-in lg:col-span-2">
+              <div className="min-w-0 rounded-lg border bg-card p-4 sm:p-6">
                 <SectionTitle className="mb-4 md:text-2xl">
                   Daily Scoring Trend
                 </SectionTitle>
@@ -532,76 +529,61 @@ export default function Optimize() {
                 />
               </div>
             </div>
-            <div className="lg:col-span-1">
-              <div className="h-full rounded-lg border bg-card p-6">
+            <div className="min-w-0 lg:col-span-1">
+              <div className="flex h-full min-w-0 flex-col rounded-lg border bg-card p-4 sm:p-6">
                 <SectionTitle className="mb-4 md:text-2xl">
                   Points Distribution
                 </SectionTitle>
-                <div className="h-[400px] w-full">
-                  <ChartContainer
-                    className="min-h-[400px] w-full"
-                    config={
-                      {
-                        'Back Court': {
-                          label: 'Back Court',
-                          color: 'var(--chart-1)',
-                        },
-                        'Front Court': {
-                          label: 'Front Court',
-                          color: 'var(--chart-2)',
-                        },
-                      } satisfies ChartConfig
-                    }
-                  >
-                    <PieChart>
-                      <ChartTooltip
-                        content={<ChartTooltipContent hideLabel />}
-                      />
-                      <Pie
-                        data={positionDistributionData}
-                        dataKey="value"
-                        label={({ value }) =>
-                          typeof value === 'number'
-                            ? `${value.toFixed(1)} pts`
-                            : ''
-                        }
-                        nameKey="position"
-                        // outerRadius={150}
-                      />
-                      <ChartLegend
-                        content={<ChartLegendContent nameKey="position" />}
-                      />
-                      {/* {positionDistributionData.map((entry, index) => (
-                          <Cell
-                            fill={COLORS[index % COLORS.length]}
-                            key={`cell-${index}`}
-                          />
-                        ))}
-                      </Pie> */}
-                    </PieChart>
-                  </ChartContainer>
-                </div>
-                {/* <div className="space-y-4">
-                  {Object.entries(
-                    playerData.squad.reduce(
-                      (acc, player) => ({
-                        ...acc,
-                        [player.position]: (acc[player.position] || 0) + 1,
-                      }),
-                      {} as Record<string, number>,
-                    ),
-                  ).map(([position, count]) => (
-                    <div
-                      key={position}
-                      className="flex items-center justify-between"
+                <ChartContainer
+                  className="mx-auto aspect-square w-full max-w-[240px]"
+                  config={
+                    {
+                      'Back Court': {
+                        label: 'Back Court',
+                        color: 'var(--chart-1)',
+                      },
+                      'Front Court': {
+                        label: 'Front Court',
+                        color: 'var(--chart-2)',
+                      },
+                    } satisfies ChartConfig
+                  }
+                >
+                  <PieChart>
+                    <ChartTooltip content={<ChartTooltipContent hideLabel />} />
+                    <Pie
+                      data={positionDistributionData}
+                      dataKey="value"
+                      nameKey="position"
+                    />
+                  </PieChart>
+                </ChartContainer>
+                <ul className="mt-4 space-y-2">
+                  {positionDistributionData.map((entry) => (
+                    <li
+                      className="flex items-baseline justify-between gap-3 text-sm"
+                      key={entry.position}
                     >
-                      <span className="text-sm font-medium">{position}</span>
-                      <span className="text-sm text-muted-foreground">
-                        {count} players
+                      <span className="flex min-w-0 items-center gap-2">
+                        <span
+                          aria-hidden="true"
+                          className="size-2 shrink-0 rounded-[2px]"
+                          style={{ backgroundColor: entry.fill }}
+                        />
+                        <span>{entry.position}</span>
                       </span>
-                    </div>
+                      <span className="shrink-0 text-right tabular-nums">
+                        <span className="font-medium">
+                          {entry.value.toFixed(1)} pts
+                        </span>
+                        <span className="mt-0.5 block text-muted-foreground">
+                          {entry.players}{' '}
+                          {entry.players === 1 ? 'player' : 'players'}
+                        </span>
+                      </span>
+                    </li>
                   ))}
-                </div> */}
+                </ul>
               </div>
             </div>
           </div>
@@ -614,7 +596,7 @@ export default function Optimize() {
             />
           </section>
 
-          <div className="animate-fade-in rounded-lg border bg-card p-6">
+          <div className="min-w-0 animate-fade-in rounded-lg border bg-card p-4 sm:p-6">
             <SectionTitle className="mb-4 md:text-2xl">
               Selected Players
             </SectionTitle>

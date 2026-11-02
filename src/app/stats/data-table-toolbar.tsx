@@ -73,16 +73,20 @@ export function DataTableToolbar<TData>({
     table.getState().sorting[0]?.id || 'form'
   )
 
+  const sortDescription = sortByOptions.find(
+    (option) => option.value === sortBy
+  )?.description
+
   return (
-    <div>
-      <div className="space-y-2">
-        <div className="flex items-center justify-between">
+    <div className="min-w-0">
+      <div className="space-y-3">
+        <div className="flex items-center justify-between gap-3">
           <h4 className="font-semibold text-sm uppercase">Filters</h4>
           <DataTableViewOptions table={table} />
         </div>
-        <div className="flex flex-1 items-center gap-2">
+        <div className="flex min-w-0 flex-col gap-2 sm:flex-row sm:flex-wrap sm:items-center">
           <Input
-            className="h-8 w-[150px] lg:w-[250px]"
+            className="w-full sm:max-w-xs"
             onChange={(event) =>
               table.getColumn('web_name')?.setFilterValue(event.target.value)
             }
@@ -91,43 +95,45 @@ export function DataTableToolbar<TData>({
               (table.getColumn('web_name')?.getFilterValue() as string) ?? ''
             }
           />
-          {table.getColumn('team') && (
-            <DataTableFacetedFilter
-              column={table.getColumn('team')}
-              options={teams.map((team) => ({
-                value: team.id.toString(),
-                label: team.name,
-              }))}
-              title="Teams"
-            />
-          )}
-          {table.getColumn('element_type') && (
-            <DataTableFacetedFilter
-              column={table.getColumn('element_type')}
-              options={[
-                { label: 'Back Court', value: '1' },
-                { label: 'Front Court', value: '2' },
-              ]}
-              title="Position"
-            />
-          )}
-          {isFiltered && (
-            <Button
-              onClick={() => table.resetColumnFilters()}
-              size="sm"
-              variant="ghost"
-            >
-              Reset
-              <XIcon />
-            </Button>
-          )}
+          <div className="flex flex-wrap gap-2">
+            {table.getColumn('team') && (
+              <DataTableFacetedFilter
+                column={table.getColumn('team')}
+                options={teams.map((team) => ({
+                  value: team.id.toString(),
+                  label: team.name,
+                }))}
+                title="Teams"
+              />
+            )}
+            {table.getColumn('element_type') && (
+              <DataTableFacetedFilter
+                column={table.getColumn('element_type')}
+                options={[
+                  { label: 'Back Court', value: '1' },
+                  { label: 'Front Court', value: '2' },
+                ]}
+                title="Position"
+              />
+            )}
+            {isFiltered && (
+              <Button
+                onClick={() => table.resetColumnFilters()}
+                size="sm"
+                variant="ghost"
+              >
+                Reset
+                <XIcon />
+              </Button>
+            )}
+          </div>
         </div>
         <Collapsible>
-          <CollapsibleTrigger className="text-primary text-sm underline hover:text-foreground">
+          <CollapsibleTrigger className="inline-flex min-h-11 items-center text-primary text-sm underline underline-offset-4 hover:text-foreground">
             Advanced Filters
             <span className="sr-only">Toggle filters</span>
           </CollapsibleTrigger>
-          <CollapsibleContent className="mt-2 flex items-center gap-8 rounded border border-dashed p-4">
+          <CollapsibleContent className="mt-2 grid min-w-0 gap-6 rounded border border-dashed p-4 sm:grid-cols-3">
             {table.getColumn('now_cost') && (
               <Field>
                 <FieldTitle>Salary</FieldTitle>
@@ -166,37 +172,35 @@ export function DataTableToolbar<TData>({
 
       <div className="space-y-2">
         <h4 className="font-semibold text-sm uppercase">Sort By</h4>
-        <div className="flex items-center gap-2">
-          <Select
-            onValueChange={(value) => {
-              setSortBy(value)
-              table.setSorting([
-                {
-                  id: value,
-                  desc: true,
-                },
-              ])
-            }}
-            value={sortBy}
-          >
-            <SelectTrigger className="h-8 w-[150px] lg:w-[250px]">
-              <SelectValue placeholder="Sort by" />
-            </SelectTrigger>
-            <SelectContent>
-              {sortByOptions.map((option) => (
-                <SelectItem key={option.value} value={option.value}>
-                  {option.label}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-          {sortByOptions.find((sbo) => sbo.value === sortBy) && (
-            <p className="flex items-center gap-1 text-muted-foreground text-sm">
-              <InfoIcon />
-              {sortByOptions.find((sbo) => sbo.value === sortBy)?.description}
-            </p>
-          )}
-        </div>
+        <Select
+          onValueChange={(value) => {
+            setSortBy(value)
+            table.setSorting([
+              {
+                id: value,
+                desc: true,
+              },
+            ])
+          }}
+          value={sortBy}
+        >
+          <SelectTrigger className="w-full sm:max-w-xs">
+            <SelectValue placeholder="Sort by" />
+          </SelectTrigger>
+          <SelectContent>
+            {sortByOptions.map((option) => (
+              <SelectItem key={option.value} value={option.value}>
+                {option.label}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+        {sortDescription ? (
+          <p className="flex items-start gap-2 text-muted-foreground text-sm leading-relaxed">
+            <InfoIcon className="mt-0.5 shrink-0" />
+            <span>{sortDescription}</span>
+          </p>
+        ) : null}
       </div>
     </div>
   )

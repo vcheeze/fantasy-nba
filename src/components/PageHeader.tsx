@@ -16,7 +16,7 @@ export function PageHeader({
   return (
     <header
       className={cn(
-        'mb-8 flex flex-col gap-5 md:mb-10 md:flex-row md:items-end md:justify-between',
+        'mb-8 flex min-w-0 flex-col gap-5 md:mb-10 md:flex-row md:items-end md:justify-between',
         className
       )}
     >
@@ -25,7 +25,7 @@ export function PageHeader({
           aria-hidden="true"
           className="mb-4 block h-1 w-12 animate-rise bg-signal"
         />
-        <h1 className="animate-rise font-display font-extrabold text-[2.6rem] leading-[0.95] tracking-tight sm:text-5xl md:text-6xl">
+        <h1 className="animate-rise text-balance font-display font-extrabold text-[2.35rem] leading-[0.95] tracking-tight sm:text-5xl md:text-6xl">
           {title}
         </h1>
         {description ? (
@@ -39,7 +39,7 @@ export function PageHeader({
       </div>
       {actions ? (
         <div
-          className="flex shrink-0 animate-rise flex-wrap gap-3"
+          className="flex w-full min-w-0 shrink-0 animate-rise flex-wrap gap-3 sm:w-auto"
           style={{ '--i': 2 } as CSSProperties}
         >
           {actions}

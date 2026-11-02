@@ -1,7 +1,7 @@
 'use client'
 
 import type { Column } from '@tanstack/react-table'
-import { useMemo, useState } from 'react'
+import { useState } from 'react'
 import { Label } from '@/components/ui/label'
 import { Slider } from '@/components/ui/slider'
 
@@ -17,33 +17,33 @@ export function DataTableRangeFilter<TData, TValue>({
   title,
   description,
 }: DataTableRangeFilterProps<TData, TValue>) {
-  // Get the current values in the column to determine min and max
-  const values = column?.getFacetedUniqueValues()
-  const numericValues = Array.from(values?.keys() ?? [])
-    .map((v) => Number(v) / 10)
-    .filter((n) => !Number.isNaN(n))
-
-  const min = useMemo(() => Math.min(...numericValues), [numericValues])
-  const max = useMemo(() => Math.max(...numericValues), [numericValues])
-
-  const [range, setRange] = useState<[number, number]>([min, max])
+  const numericValues = Array.from(
+    column?.getFacetedUniqueValues()?.keys() ?? []
+  )
+    .map((value) => Number(value) / 10)
+    .filter((value) => Number.isFinite(value))
+  const min = numericValues.length === 0 ? 0 : Math.min(...numericValues)
+  const max = numericValues.length === 0 ? 0 : Math.max(...numericValues)
+  const [range, setRange] = useState<[number, number] | null>(null)
+  const shown = range ?? [min, max]
 
   return (
-    <div className="space-y-4">
+    <div className="min-w-0 space-y-4">
       <Slider
         className="w-full"
+        disabled={min === max}
         max={max}
         min={min}
         onValueChange={(value: [number, number]) => {
           setRange(value)
-          column?.setFilterValue(value.map((v) => Math.round(v * 10)))
+          column?.setFilterValue(value.map((item) => Math.round(item * 10)))
         }}
         step={0.1}
-        value={range}
+        value={shown}
       />
-      <div className="flex items-center justify-between text-muted-foreground">
-        <Label>{range[0].toFixed(1)}</Label>
-        <Label>{range[1].toFixed(1)}</Label>
+      <div className="flex items-center justify-between text-muted-foreground text-sm tabular-nums">
+        <Label>{shown[0].toFixed(1)}</Label>
+        <Label>{shown[1].toFixed(1)}</Label>
       </div>
     </div>
   )

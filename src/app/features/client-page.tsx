@@ -108,16 +108,16 @@ export default function FeatureVotingPage() {
           ? Array.from({ length: 3 }).map((_, i) => (
               <Card key={i}>
                 <CardHeader>
-                  <div className="flex flex-col gap-4 sm:flex-row sm:items-center">
-                    <div className="flex-1 space-y-3">
-                      <Skeleton className="h-6 w-[250px] max-w-full" />
-                      <Skeleton className="h-4 w-[350px] max-w-full" />
+                  <div className="flex min-w-0 flex-col gap-4 sm:flex-row sm:items-center">
+                    <div className="min-w-0 flex-1 space-y-3">
+                      <Skeleton className="h-6 w-2/3" />
+                      <Skeleton className="h-4 w-full" />
                     </div>
-                    <Skeleton className="h-10 w-[100px] self-start sm:self-center" />
+                    <Skeleton className="h-11 w-24 self-start sm:self-center" />
                   </div>
                 </CardHeader>
                 <CardContent>
-                  <Skeleton className="h-4 w-[100px]" />
+                  <Skeleton className="h-4 w-24" />
                 </CardContent>
               </Card>
             ))
@@ -127,10 +127,12 @@ export default function FeatureVotingPage() {
                 key={feature.id}
               >
                 <CardHeader>
-                  <div className="flex flex-col gap-4 sm:flex-row sm:items-center">
-                    <div className="flex-1 space-y-2">
+                  <div className="flex min-w-0 flex-col gap-4 sm:flex-row sm:items-center">
+                    <div className="min-w-0 flex-1 space-y-2">
                       <CardTitle className="font-bold font-display text-2xl leading-none tracking-tight">
-                        <h2>{feature.title}</h2>
+                        <h2 className="text-balance break-words">
+                          {feature.title}
+                        </h2>
                       </CardTitle>
                       <CardDescription className="text-sm sm:text-base">
                         {feature.description}
@@ -157,13 +159,13 @@ export default function FeatureVotingPage() {
                     </Button>
                   </div>
                 </CardHeader>
-                <CardContent className="max-sm:flex max-sm:justify-between">
+                <CardContent className="flex flex-wrap items-center justify-between gap-3 sm:block">
                   <Badge className={`${getStatusColor(feature.status)}`}>
                     {feature.status.charAt(0).toUpperCase() +
                       feature.status.slice(1).replaceAll('-', ' ')}
                   </Badge>
                   <Button
-                    className="min-w-[100px] self-center md:hidden"
+                    className="min-w-[100px] self-center sm:hidden"
                     disabled={data.votedFeatures.includes(feature.id)}
                     onClick={() => handleVote(feature.id)}
                     variant={

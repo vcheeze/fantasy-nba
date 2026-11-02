@@ -21,7 +21,7 @@ export default function Stats() {
         title="Player Stats"
       />
       <PlayerTable columns={tableColumns} data={activePlayers} teams={teams} />
-      <div className="grid gap-4 lg:grid-cols-2">
+      <div className="grid min-w-0 gap-4 lg:grid-cols-2">
         <PriceChangeLadder data={activePlayers} />
       </div>
     </div>

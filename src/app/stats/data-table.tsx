@@ -24,6 +24,7 @@ import {
   TableRow,
 } from '@/components/ui/table'
 import type { ITeam, IElement as Player } from '@/hooks/api/metadata'
+import { cn } from '@/lib/utils'
 import { DataTablePagination } from './data-table-pagination'
 import { DataTableToolbar } from './data-table-toolbar'
 
@@ -95,16 +96,22 @@ export function PlayerTable({
   })
 
   return (
-    <div className="space-y-4 rounded-lg border p-6 shadow-sm">
+    <div className="min-w-0 space-y-4 rounded-lg border p-4 shadow-sm sm:p-6">
       <DataTableToolbar table={table} teams={teams} />
 
-      <div className="overflow-x-auto rounded-md border">
+      <div className="@container min-w-0 rounded-md border">
         <Table>
           <TableHeader>
             {table.getHeaderGroups().map((headerGroup) => (
               <TableRow key={headerGroup.id}>
-                {headerGroup.headers.map((header) => (
-                  <TableHead key={header.id}>
+                {headerGroup.headers.map((header, index) => (
+                  <TableHead
+                    className={cn(
+                      'px-2.5 md:px-4',
+                      index === 0 && 'sticky left-0 z-20 border-r bg-background'
+                    )}
+                    key={header.id}
+                  >
                     {header.isPlaceholder
                       ? null
                       : flexRender(
@@ -123,8 +130,15 @@ export function PlayerTable({
                   data-state={row.getIsSelected() && 'selected'}
                   key={row.id}
                 >
-                  {row.getVisibleCells().map((cell) => (
-                    <TableCell key={cell.id}>
+                  {row.getVisibleCells().map((cell, index) => (
+                    <TableCell
+                      className={cn(
+                        'px-2.5 py-3 md:px-4',
+                        index === 0 &&
+                          'sticky left-0 z-10 border-r bg-background group-hover:bg-muted'
+                      )}
+                      key={cell.id}
+                    >
                       {flexRender(
                         cell.column.columnDef.cell,
                         cell.getContext()
@@ -135,11 +149,10 @@ export function PlayerTable({
               ))
             ) : (
               <TableRow>
-                <TableCell
-                  className="h-24 text-center"
-                  colSpan={columns.length}
-                >
-                  No players found.
+                <TableCell className="h-24 p-0" colSpan={columns.length}>
+                  <div className="sticky left-0 flex h-24 w-[100cqw] items-center justify-center text-center">
+                    No players found.
+                  </div>
                 </TableCell>
               </TableRow>
             )}

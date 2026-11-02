@@ -17,10 +17,11 @@ export function LogoMark({ className }: { className?: string }) {
 
 export function Wordmark({ className }: { className?: string }) {
   return (
-    <span className={cn('flex items-center gap-2.5', className)}>
+    <span className={cn('flex min-w-0 items-center gap-2.5', className)}>
       <LogoMark />
-      <span className="font-display font-extrabold text-2xl leading-none tracking-tight">
-        Fantasy NBA Planner
+      <span className="min-w-0 truncate font-display font-extrabold text-xl leading-none tracking-tight sm:text-2xl">
+        <span className="sm:hidden">Fantasy NBA</span>
+        <span className="hidden sm:inline">Fantasy NBA Planner</span>
       </span>
     </span>
   )
